@@ -12,7 +12,7 @@ This package realizes an exact algorithm (Bazovkin and Mosler, 2010) to compute 
 \tabular{ll}{
 Package: \tab WMTregions\cr
 Type: \tab Package\cr
-Version: \tab 2.3.9\cr
+Version: \tab 2.3.10\cr
 Date: \tab 2010-09-11\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr

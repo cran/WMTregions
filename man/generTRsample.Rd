@@ -35,13 +35,16 @@ WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{
 \value{
 The format of a data file:
 
-\enumerate{
-\item WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{geometrical})
-\item Depth parameter \var{alpha} - floating point number in [0,1[, e.g. 0.221
-\item Dimension \var{dim} - integer number > 2
-\item Number of data points \var{num} - integer number > \var{dim}
-\item Serially written coordinates of the data points - floating point numbers
-}
+1. WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{geometrical})
+
+2. Depth parameter \var{alpha} - floating point number in [0,1[, e.g. 0.221
+
+3. Dimension \var{dim} - integer number > 2
+
+4. Number of data points \var{num} - integer number > \var{dim}
+
+5. Serially written coordinates of the data points - \var{dim * var} floating point numbers
+
 }
 \author{
 Pavel Bazovkin and Karl Mosler
