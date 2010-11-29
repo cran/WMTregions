@@ -1,11 +1,8 @@
 loadWMTR <-
-function(dim, fdir = getwd())
-
+function (fdir = getwd()) 
 {
-
-wmtreg <- matrix(scan(as.character(paste(fdir,"/","TRegion.dat",sep = ""))), ncol = dim+1)
-
-wmtreg
-
+    wmtreg <- read.table(as.character(paste(fdir, "/", "TRegion.dat", 
+        sep = "")))
+    as.matrix(wmtreg)
 }
 

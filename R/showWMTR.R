@@ -1,23 +1,8 @@
 showWMTR <-
-function(fdir = getwd())
-
-
-
+function (fdir = getwd()) 
 {
-
-
-
-# library(rggobi)
-
-
-
-ReadyTR <- read.table(as.character(paste(fdir,"/","TR_vertices.dat",sep = "")))
-
-
-
-ggobi(ReadyTR)
-
-
-
+    ReadyTR <- read.table(as.character(paste(fdir, "/", "tmp_vrtheap.dat", 
+        sep = "")))
+    ggobi(ReadyTR)
 }
 

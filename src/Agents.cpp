@@ -38,20 +38,20 @@ public:
 
 	void PrintResults()
 	{
-		ofstream os("TRegion.dat");
+		//ofstream os("TRegion.dat");
 		
 		FILE *stream;
-		stream = fopen( "Trimmed_region_kurz.dat", "w" );
+		stream = fopen( "TRegion_vertices.dat", "w" );
 		
-		os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
-		fprintf( stream, "The calculated trimmed region: (%d facets) \n", this->trimmed_region.size() );
+		//os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
+		//fprintf( stream, "The calculated trimmed region: (%d facets) \n", this->trimmed_region.size() );
 
 		list<Facet>::iterator facetit;
 
 		// For each facet
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
 		{			
-			os << "( ";
+			//os << "( ";
 			fprintf( stream,"( " );
 
 			list<ExtremePoint>::iterator expointit;
@@ -59,25 +59,27 @@ public:
 			// For each node of the facet
 			for(expointit = facetit->nodes.begin(); expointit != facetit->nodes.end(); expointit++)
 			{
-				os << "(";
+				//os << "(";
 				fprintf( stream,"(" );
 
 				for(int i = 0; i < expointit->coord.size(); i++)
 				{
-					os << expointit->coord[i] + this->coord_center.coord[i] << ";";
+					//os << expointit->coord[i] + this->coord_center.coord[i] << ";";
 					fprintf( stream,"%.3f;", expointit->coord[i] + this->coord_center.coord[i] );
 				}
 
-				os << ") ";
+				//os << ") ";
 				fprintf( stream,") " );
 			}
 			
-			os << " )\n\n";
+			//os << " )\n\n";
 			fprintf( stream," )\n\n" );
 		}
 
-		os.close();
+		//os.close();
 		fclose( stream );
+
+		return;
 
 		ofstream tos("Timing.dat");
 		tos << "Collected timestamps: \n";
@@ -172,7 +174,7 @@ public:
 	{
 
             //ofstream os(strcat(_dir, "trimmed_region_vertices2.dat"));
-		ofstream osv( "TR_vertices.dat");
+		ofstream osv( "tmp_vrtheap.dat");
 		ofstream ostr( "TRegion.dat");
 		//ofstream os("Trimmed_region.dat");
 		
@@ -196,13 +198,15 @@ public:
 				osv << "\n";
 			}
 
-                        // Writing hyperplanes
-                        for(int i = 0; i < facetit->normalvec.coord.size(); i++)
-                        {
-                            ostr << facetit->normalvec.coord[i] << " ";
-                        }
+  			Vector shift;
+			shift.coord = this->coord_center.coord;
+			  // Writing hyperplanes
+				for(int i = 0; i < facetit->normalvec.coord.size(); i++)
+				{
+					ostr << facetit->normalvec.coord[i] << " ";
+				}
 
-                        ostr << facetit->abs_member << endl;
+				ostr << facetit->abs_member- Vector::ScalarMultiply(facetit->normalvec, shift) << endl;
 			
 		}
 
@@ -645,6 +649,192 @@ public:
 		rtrix += delta_stepx;									// Increase The Rotation Variable For The Figure
 		return 0;										// Keep Going
 	}
+
+
+
+
+	void GLSceneToExport()									// Here's Where We Do All The Drawing
+	{
+
+		int currcol[3];
+
+		//// ********************* Display points from the data cloud **************************
+
+		
+		ofstream osvisd( "tmp_vis_dt.dat");
+
+		currcol[0] = 255;
+		currcol[1] = 0;
+		currcol[2] = 0;
+
+		vector<Point>::iterator pointit;
+
+		float fat = 0.1f;
+
+		for(pointit = this->data_cloud.begin(); pointit != this->data_cloud.end(); pointit++)
+		{
+			// Displaying as spheres	
+			osvisd << pointit->coord[0] << " " << pointit->coord[1] << " " << pointit->coord[2] << endl;
+
+			// Displaying as pyramides	
+			/* osvisd << pointit->coord[0] + fat << " " << pointit->coord[1] << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] + fat << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] - fat << endl;					
+
+				osvisd << pointit->coord[0] + fat << " " << pointit->coord[1] << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] + fat << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] + fat << endl;					
+				
+				osvisd << pointit->coord[0] + fat << " " << pointit->coord[1] << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] - fat << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] + fat << endl;					
+
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] + fat << " " << pointit->coord[2] << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] - fat << endl;					
+				osvisd << pointit->coord[0] - fat << " " << pointit->coord[1] - fat << " " << pointit->coord[2] + fat << endl; */					
+		}
+
+		osvisd.close();
+
+
+		// ***********************************************************************************
+
+
+		// ********************* Display the trimmed region **********************************
+
+		ofstream osvisf("tmp_vis_fc.dat");
+
+		list<Facet>::iterator facetit;
+
+		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
+		{			
+
+			if( !facetit->truncated /*&&  ++stop<flborder*/  )
+			{
+				
+				float peak = max(fabs(facetit->normalvec.coord[0]), max(fabs(facetit->normalvec.coord[1]), fabs(facetit->normalvec.coord[2])));
+				float gr_sigma = 2;
+				float gr_mu    = 0.5f;
+				float colx = -facetit->normalvec.coord[0] / (gr_sigma * peak) + gr_mu;
+				float coly = -facetit->normalvec.coord[1] / (gr_sigma * peak) + gr_mu;
+				float colz = -facetit->normalvec.coord[2] / (gr_sigma * peak) + gr_mu;
+				//glColor3f(colx, coly, colz);
+
+				list<ExtremePoint>::iterator expointit;
+				
+				expointit = facetit->nodes.begin();
+				osvisf << expointit->coord[0] << " " << expointit->coord[1] << " " << expointit->coord[2] << endl;		
+				
+				expointit++;
+				osvisf << expointit->coord[0] << " " << expointit->coord[1] << " " << expointit->coord[2] << endl;					
+				
+				expointit++;
+				osvisf << expointit->coord[0] << " " << expointit->coord[1] << " " << expointit->coord[2] << endl;
+			}
+		}
+
+	
+
+		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
+		{			
+						
+
+			if( facetit->truncated /*&& ++stop<flborder*/ )
+			{
+
+				float peak = max(fabs(facetit->normalvec.coord[0]), max(fabs(facetit->normalvec.coord[1]), fabs(facetit->normalvec.coord[2])));
+				float gr_sigma = 2;
+				float gr_mu    = 0.5f;
+				float colx = -facetit->normalvec.coord[0] / (gr_sigma * peak) + gr_mu;
+				float coly = -facetit->normalvec.coord[1] / (gr_sigma * peak) + gr_mu;
+				float colz = -facetit->normalvec.coord[2] / (gr_sigma * peak) + gr_mu;
+
+				list<ExtremePoint>::iterator expointit;
+				list<ExtremePoint>::iterator expointitback;
+				
+				//glBegin(GL_POLYGON);
+
+				//glColor3f(colx, coly, colz);
+
+				vector<vector<float> > cvec(facetit->nodes.size());
+				int j;
+				for(j = 0, expointit = facetit->nodes.begin(); expointit != facetit->nodes.end(); expointit++, j++)
+				{
+					cvec[j] = expointit->coord;
+
+				}
+
+				// Hexagonal
+				if(cvec.size() == 6)
+				{
+					osvisf << (cvec[0])[0] << " " << (cvec[0])[1] << " " << (cvec[0])[2] << endl;
+					osvisf << (cvec[1])[0] << " " << (cvec[1])[1] << " " << (cvec[1])[2] << endl;
+					osvisf << (cvec[2])[0] << " " << (cvec[2])[1] << " " << (cvec[2])[2] << endl;
+
+					osvisf << (cvec[2])[0] << " " << (cvec[2])[1] << " " << (cvec[2])[2] << endl;
+					osvisf << (cvec[3])[0] << " " << (cvec[3])[1] << " " << (cvec[3])[2] << endl;
+					osvisf << (cvec[4])[0] << " " << (cvec[4])[1] << " " << (cvec[4])[2] << endl;
+
+					osvisf << (cvec[0])[0] << " " << (cvec[0])[1] << " " << (cvec[0])[2] << endl;
+					osvisf << (cvec[5])[0] << " " << (cvec[5])[1] << " " << (cvec[5])[2] << endl;
+					osvisf << (cvec[4])[0] << " " << (cvec[4])[1] << " " << (cvec[4])[2] << endl;
+
+					osvisf << (cvec[2])[0] << " " << (cvec[2])[1] << " " << (cvec[2])[2] << endl;
+					osvisf << (cvec[0])[0] << " " << (cvec[0])[1] << " " << (cvec[0])[2] << endl;
+					osvisf << (cvec[4])[0] << " " << (cvec[4])[1] << " " << (cvec[4])[2] << endl;
+				}
+				// Quad
+				else
+				{
+					osvisf << (cvec[0])[0] << " " << (cvec[0])[1] << " " << (cvec[0])[2] << endl;
+					osvisf << (cvec[1])[0] << " " << (cvec[1])[1] << " " << (cvec[1])[2] << endl;
+					osvisf << (cvec[2])[0] << " " << (cvec[2])[1] << " " << (cvec[2])[2] << endl;
+
+					osvisf << (cvec[2])[0] << " " << (cvec[2])[1] << " " << (cvec[2])[2] << endl;
+					osvisf << (cvec[3])[0] << " " << (cvec[3])[1] << " " << (cvec[3])[2] << endl;
+					osvisf << (cvec[0])[0] << " " << (cvec[0])[1] << " " << (cvec[0])[2] << endl;
+				}
+
+				
+			}
+		}
+
+		osvisf.close();
+		
+
+		// ***********************************************************************************
+		
+		
+		// ********************* Display edges of the trimmed region *************************
+
+		ofstream osvisr("tmp_vis_rg.dat");
+		
+		//glColor3f(0.4f,0.4f,0.4f);						
+		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
+		{			
+
+			list<ExtremePoint>::iterator expointit, expointitn;
+			expointit = facetit->nodes.begin();
+			expointitn = expointit;
+			expointitn++;
+			for(; expointitn != facetit->nodes.end(); expointit++, expointitn++)
+			{
+				osvisr << expointit->coord[0] << " " << expointit->coord[1] << " " << expointit->coord[2] << endl;		
+				osvisr << expointitn->coord[0] << " " << expointitn->coord[1] << " " << expointitn->coord[2] << endl;		
+			}
+			expointitn = facetit->nodes.begin();
+			osvisr << expointit->coord[0] << " " << expointit->coord[1] << " " << expointit->coord[2] << endl;		
+			osvisr << expointitn->coord[0] << " " << expointitn->coord[1] << " " << expointitn->coord[2] << endl;		
+				
+		}
+
+		osvisr.close();
+
+		// ***********************************************************************************
+
+
+	}
+
 
 
 
@@ -2505,7 +2695,12 @@ public:
 
 
 						// Normalizing the normalvec (currfacet.normalvec & rotvec must have length=1)
-						float tonormal = 1.0f / (sqrt(1.0f + minplambda * minplambda));
+						float tonormal;
+						if( minp.defined() )
+							tonormal = 1.0f / (sqrt(1.0f + minplambda * minplambda));
+						else
+							tonormal = 1.0f / (sqrt(1.0f + minnlambda * minnlambda));
+
 						lowfac.normalvec.Scale(tonormal);
 
 						// If 2 Type II clusters do associate, create a new ${\cal{A}}_q$ 
@@ -2685,61 +2880,180 @@ public:
 		//return this->trimmed_region;
 	}
 
+private:
+
+
+	// Returns a set of splittings of the _sublist into a selected combination and the rest 
+	template<class ArbClass> list<vector<vector<ArbClass> > > SelectCombins(vector<ArbClass> _vec, int _num)
+	{
+		int veclen = _vec.size(); 
+		int numofcombs = Comb(veclen, _num);
+
+		list<vector<vector<ArbClass> > > reslist;
+
+		vector<int> comb(_num), contracomb(veclen - _num);
+		for(int i=0; i < _num; i++)
+		{
+			comb[i]       = i;
+		}
+		for(int i=_num; i < veclen; i++)
+		{
+			contracomb[i-_num] = i;
+		}
+
+		vector<vector<ArbClass> > splitt(2);
+		vector<ArbClass> empt1(_num);          splitt[0] = empt1;
+		vector<ArbClass> empt2(veclen - _num); splitt[1] = empt2;
+
+		for(int w = 0; w < _num; w++)
+			(splitt[0])[w] = _vec[comb[w]]; 
+		for(int w = 0; w < veclen - _num; w++)
+			(splitt[1])[w] = _vec[contracomb[w]];
+		//splitt[0] = comb; splitt[1] = contracomb;
+
+		reslist.push_back(splitt);
+		
+		for(int q=0; q < numofcombs-1; q++)
+		{
+			comb = NextCombination(comb, veclen);
+			
+			int hund = 0;
+			for(int i=0; i < veclen; i++)
+			{
+				if(hund < _num && comb[hund] == i )
+					hund++;
+				else contracomb[i-hund] = i; 
+			} 
+		
+			for(int w = 0; w < _num; w++)
+				(splitt[0])[w] = _vec[comb[w]]; 
+			for(int w = 0; w < veclen - _num; w++)
+				(splitt[1])[w] = _vec[contracomb[w]];
+			//splitt[0] = comb; splitt[1] = contracomb;
+		
+			reslist.push_back(splitt);
+		}
+
+		return reslist;
+	}
+
+public:
+	
 	void CalculateAllVertices()
 	{
-		if(dim > 3)
+		list<Facet>::iterator facetit;
+
+		// For each facet
+		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
 		{
-			return;
-			list<Facet>::iterator facetit;
+			list<int>::iterator iterit, itercard;
 
-			// For each facet
-			for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
+			// Combinations within ${\cal A}_l$ are independent of ones in ${\cal A}_k, k \ne l$
+			vector<list<vector<vector<int> > > > als;
+			for(iterit = facetit->anchors.begin(), itercard = facetit->cardinals.begin();
+				iterit != facetit->anchors.end();
+				iterit++, itercard++)
 			{
-				list<int>::iterator iterit, itercard;
-
-				// Combinations within ${\cal A}_l$ are independent of ones in ${\cal A}_k, k \ne l$
-				list<list<vector<int> > > als;
-				for(iterit = facetit->anchors.begin(), itercard = facetit->cardinals.begin();
-					iterit != facetit->anchors.end();
-					iterit++, itercard++)
+				// Create a list from $A_l$ and weights homogeneity map
+				vector<int> al, alordered;
+				list<int> alwmap;
+				int stopal = *iterit+*itercard;
+					
+				int lastjump = *iterit;
+				for(int i = *iterit; i < stopal; i++)
 				{
-					// Searching for weight-homogenous groups
-					list<int> homog, homogc;
-					homog.push_back(*iterit);
-					for(int i = *iterit+1; i < *iterit + *itercard; i++)
+					//al.push_back(facetit->index_perm[i]);
+						
+					if( (i > *iterit) && (weight[i] > weight[i-1]) )
 					{
-						if(weight[i] > weight[i-1])
-						{
-							homog.push_back(*iterit);
-							homogc.push_back(*iterit - homog.back());
-						}
+						alwmap.push_back(i - lastjump);
+						lastjump = i; 
 					}
-					homogc.push_back(*iterit + *itercard - homog.back());
-
-					list<vector<int> > al;
-					vector<int> apprperm;
-
-					list<int>::iterator ith, ithc;
-					for(ith = homog.begin(), ithc = homogc.begin();
-						ith != homog.end();
-						ith++, ithc++)
-					{
-						vector<int> basperm(*ithc);
-						for(int qq = 0; qq < *ithc; qq++)
-						{
-							basperm[qq] = qq;
-						}
-					}
-
-					als.push_back(al);
 				}
+				alwmap.push_back(stopal - lastjump);
 
-				// Generating all appropriate combinations from $\Pi$
+				al.assign(facetit->index_perm.begin() + *iterit, facetit->index_perm.begin() + stopal);
+
+				list<vector<vector<int> > > alcombs; // List of 2-element vectors - splittings of A_l into permuted and unpermuted parts
+				vector<vector<int> > defcomb(2);
+				defcomb[0] = alordered; defcomb[1] = al;
+				alcombs.push_back(defcomb);
+
+				list<vector<vector<int> > >::iterator itspl,itpartspl;
+				do
+				{
+					list<vector<vector<int> > > nextalcombs;
+
+					for(itspl = alcombs.begin(); itspl != alcombs.end(); itspl++)
+					{
+						list<vector<vector<int> > > partcombs = SelectCombins((*itspl)[1], alwmap.front());
+						
+						// Augmenting partial combination with an already ordered part
+						for(itpartspl = partcombs.begin(); itpartspl != partcombs.end(); itpartspl++)
+						{
+							(*itpartspl)[0].insert((*itpartspl)[0].begin(), (*itspl)[0].begin(), (*itspl)[0].end());
+						}
+
+						nextalcombs.splice(nextalcombs.begin(), partcombs);
+					}
+
+					alcombs = nextalcombs;
+
+					alwmap.pop_front();
+				}while(!alwmap.empty());
+
+				als.push_back(alcombs);
 			}
 
+			// Generating final permutations (combining independent variants from all $A_l$)
+			list<vector<int> > ready_perms;
+			vector<list<vector<vector<int> > > >::iterator iterals;
 
+			ready_perms.push_back(facetit->index_perm);
+
+			for(iterit = facetit->anchors.begin(), itercard = facetit->cardinals.begin(), iterals = als.begin();
+				iterit != facetit->anchors.end();
+				iterit++, itercard++, iterals++)
+			{
+				list<vector<int> > step_ready_perms;
+				int stopal = *iterit+*itercard;
+
+				for(list<vector<int> >::iterator  itsub = ready_perms.begin(); itsub != ready_perms.end(); itsub++)
+				{
+					for(list<vector<vector<int> > >::iterator tmpal = iterals->begin(); tmpal != iterals->end(); tmpal++)
+					{
+						vector<int> augmperm = *itsub;
+						
+						for(int j = *iterit; j < stopal; j++)
+						{
+							augmperm[j] = ((*tmpal)[0])[j-*iterit];
+						}
+
+						step_ready_perms.push_back(augmperm);
+					}
+				}
+
+				ready_perms = step_ready_perms;
+			}
+
+			// Final genearing of vertices
+
+			facetit->nodes.clear();
+
+			for(list<vector<int> >::iterator  itsub = ready_perms.begin(); itsub != ready_perms.end(); itsub++)
+			{
+				ExtremePoint newnode(this->dim);
+
+				newnode.coord = CurrentExtremePoint(*itsub);
+				facetit->nodes.push_back(newnode);
+			}
+			
 		}
-		else
+	}
+	
+	void CalculateAllVertices3d()
+	{
+		if(dim == 3)
 		{
 			list<Facet>::iterator facetit;
 
@@ -2866,242 +3180,6 @@ public:
 
 	}
 
-	list<Facet> CalculateAllVertices2()
-	{
-		//return this->trimmed_region;
-
-		list<Facet>::iterator facetit;
-
-		vector<int> triv1(this->num);
-		int triv = 0;
-		for(int i = 0; i < triv1.size(); i++)
-		{
-			triv1[i] = triv;
-			triv++;
-		}
-
-		// For each facet
-		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
-		{
-			//vector<int> bp = facetit->GetIndexPerm(this->num);
-			vector<int> bp = triv1;
-
-			Permutation fperm = this->perm;
-			fperm.Support(facetit->normalvec);
-
-			// Freedom level for the facet
-			int l = max(this->border_index - facetit->anchor, 0);
-			list<int>::iterator fit;
-
-			vector<int> combp(l);      // Variable part - combinations 
-			vector<int> permp(dim-l);  // Variable part - permutations 
-			boost::dynamic_bitset<> binfolge(dim);
-			binfolge.reset();
-
-			// Trivial index combination
-			triv = 0;
-			for(int i = 0; i < combp.size(); i++)
-			{
-				combp[i] = triv;
-				triv++;
-			}
-			
-			int nocomb = this->Comb(dim, combp.size());
-			do // Traversing combinations
-			{				
-				binfolge.reset();
-				for(int i = 0; i < combp.size(); i++)
-				{
-					binfolge[combp[i]] = 1;
-				}
-				
-				int insperm = 0;
-				for(int i = 0; i < dim; i++)
-				{
-					if(!binfolge[i]) 
-					{
-						permp[insperm] = i;
-						insperm++;
-					}
-				}
-
-				boost::uint64_t noperm = this->Fact(permp.size());
-				do // Traversing permutations
-				{
-
-					vector<int> newbp = bp;
-
-					for(int i = 0; i < combp.size(); i++)
-					{
-						newbp[facetit->anchor                + i] = bp[facetit->anchor + combp[i]];
-					}
-					for(int i = 0; i < permp.size(); i++)
-					{
-						newbp[facetit->anchor + combp.size() + i] = bp[facetit->anchor + permp[i]];
-					}
-
-					ExtremePoint newvert(this->dim, this->border_index);
-					//newvert.coord = this->CurrentExtremePoint(newbp);
-					newvert.coord = this->CurrentExtremePoint_gener(newbp,fperm);
-					newvert.index_perm = newbp;
-					facetit->nodes.push_back(newvert);
-
-					::next_permutation(permp.begin(), permp.end()); // !Warning: Predicate is not given
-					noperm--;
-				}while( noperm > 0 );
-
-				combp = this->NextCombination(combp, dim);
-				nocomb--;
-			}while( nocomb > 0);
-
-			facetit->CalculateAbsoluteMemberH(facetit->nodes.front());
-
-			if(facetit->nodes.size() > this->dim)
-				facetit->truncated = true;
-
-			continue;
-
-			if( l > 0 )
-			{
-		
-				// Variable part of the defining set part of permutation
-				vector<int> ds(l);
-				
-				int fu = 0;
-				for(int i = 0; i < ds.size(); i++)
-				{
-					ds[i] = fu;
-
-					fu++;
-				}
-				
-				// First combination is obtained
-				
-				bool stop_gen = false; 
-				// Processing $C_l^{d}$ combinations in ds
-				do
-				{
-					int insl = facetit->anchor;                // Place to insert in the lower part of the defining combination
-					int insh = this->border_index;			   // Place to insert in the higher part of the defining combination
-
-					fu       = 0;
-					int from = 0;            // Index of current element in ds
-					for(fit = facetit->def_set.begin(); fit != facetit->def_set.end(); fit++)
-					{
-						if(from < ds.size() && fu == ds[from])
-						{
-							bp[insl] = *fit;
-
-							insl++;
-							from++;
-						}
-						else
-						{
-							bp[insh] = *fit;
-
-							insh++;
-						}
-
-						fu++;
-					}
-
-					// We've got a full index permutation bp for the current combination ds
-					// Now generate corresponding $d-l$ vertices
-
-					ExtremePoint newvert(this->dim, this->border_index);
-					vector<int> bptemp   = bp;
-					//newvert.index_perm = bptemp;
-					newvert.coord        = this->CurrentExtremePoint(bptemp);
-
-					facetit->nodes.push_back(newvert);
-
-					// Interchanging points in the higher part to get other $d-l-1$ vertices
-
-					for(int i = this->border_index + 1; i < facetit->anchor + dim; i++ )
-					{
-						bptemp                     = bp;
-
-						int tempp			       = bptemp[i];
-						bptemp[i]				   = bptemp[this->border_index];
-						bptemp[this->border_index] = tempp;
-
-						//newvert.index_perm       = bptemp;
-						newvert.coord              = this->CurrentExtremePoint(bptemp);
-
-						facetit->nodes.push_back(newvert);
-					}
-
-					// If there is a lower part
-					if(facetit->anchor < this->border_index)
-					{
-						if(ds[0] == this->dim - ds.size()) stop_gen = true;
-
-						ds = this->NextCombination(ds, this->dim);
-					}
-					else
-					{
-						stop_gen = true;
-					}
-
-				}while(!stop_gen);
-
-				if(facetit->anchor < this->border_index && (facetit->anchor + dim - 1 > this->border_index))
-				{
-					facetit->truncated = true; 
-				}
-				else
-				{
-					facetit->truncated = false; 
-				}
-			}
-			// !!!Warning: ONLY for dim=3
-			else
-			{
-				ExtremePoint newvert(this->dim, this->border_index);
-				vector<int> bptemp   = bp;
-				newvert.coord        = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-
-				bptemp                      = bp;
-				int tempp			        = bptemp[facetit->anchor + 1];
-				bptemp[facetit->anchor + 1]	= bptemp[facetit->anchor];
-				bptemp[facetit->anchor]     = tempp;
-				newvert.coord               = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-				
-				tempp			            = bptemp[facetit->anchor + 2];
-				bptemp[facetit->anchor + 2]	= bptemp[facetit->anchor + 1];
-				bptemp[facetit->anchor + 1] = tempp;
-				newvert.coord               = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-
-				bptemp                      = bp;
-				tempp			            = bptemp[facetit->anchor + 2];
-				bptemp[facetit->anchor + 2]	= bptemp[facetit->anchor];
-				bptemp[facetit->anchor]     = tempp;
-				newvert.coord               = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-
-				tempp			            = bptemp[facetit->anchor + 2];
-				bptemp[facetit->anchor + 2]	= bptemp[facetit->anchor + 1];
-				bptemp[facetit->anchor + 1] = tempp;
-				newvert.coord               = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-
-				bptemp                      = bp;
-				tempp			            = bptemp[facetit->anchor + 2];
-				bptemp[facetit->anchor + 2]	= bptemp[facetit->anchor + 1];
-				bptemp[facetit->anchor + 1] = tempp;
-				newvert.coord               = this->CurrentExtremePoint(bptemp);
-				facetit->nodes.push_back(newvert);
-
-				facetit->truncated = true; 
-			}
-		}
-
-
-		return this->trimmed_region;
-	}
 
 	list<Facet> ReadyTR()
 	{
@@ -3232,7 +3310,10 @@ public:
 		processor->ComputeHyperplanes();
 		::RecordTime();
 
-		processor->CalculateAllVertices();
+		if(this->dim == 3)
+			processor->CalculateAllVertices3d();
+		else
+			processor->CalculateAllVertices();
 
 		return processor->ReadyTR();
 
@@ -3262,6 +3343,8 @@ int  ComputeWMTR(char** nameofsource, char** _wdir)			// Window Show State
 		result_agent->coord_center   = input_agent->centroid;
 
 		result_agent->PrintResultsHyperplanes(*_wdir);
+		result_agent->PrintResults();
+		result_agent->GLSceneToExport();
 	}
 	else
 	// Group mode

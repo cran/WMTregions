@@ -12,12 +12,12 @@ This package realizes an exact algorithm (Bazovkin and Mosler, 2010) to compute 
 \tabular{ll}{
 Package: \tab WMTregions\cr
 Type: \tab Package\cr
-Version: \tab 2.3.10\cr
-Date: \tab 2010-09-11\cr
+Version: \tab 2.5\cr
+Date: \tab 2010-11-19\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
-The package contains functions calculating and representing weighted-mean trimmed regions (WMTR). The data cloud is given in a text file. A function \code{generTRsample} can be used for generating a sample data file. A function \code{WMTR} is the main method for calculating WMT regions. Results are stored in a data file and can be visualized by means of \code{showWMTR} function that uses \pkg{rggobi} package. Apply \code{loadWMTR} to load the WMTR to an R variable.  
+The package contains functions calculating and representing weighted-mean trimmed regions (WMTR). The data cloud is given in a text file. A function \code{generTRsample} can be used for generating a sample data file. A function \code{WMTR} is the main method for calculating WMT regions. Results are stored in a data file and can be visualized by means of either \code{showWMTR} function that uses \pkg{rggobi} package or \code{visualWMTR} method producing OpenGL visualization. Apply \code{loadWMTR} to load the WMTR to an R variable.  
 }
 \author{
 Pavel Bazovkin, Karl Mosler

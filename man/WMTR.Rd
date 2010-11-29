@@ -33,7 +33,11 @@ The format of a data file:
 
 }
 \value{
-Computational results are stored in the working directory in a file "TRegion.dat". Format: each line represents a facet of the trimmed region, where first \var{dim} floating point numbers are coordinates of a normal to the facet and the last one - its absolute distance from the origin. 
+Computational results are stored in the working directory in:
+
+1. A file "TRegion.dat". Format: each line represents a facet of the trimmed region, where first \var{dim} floating point numbers are coordinates of a normal to the facet and the last one - its absolute distance from the origin.
+
+2. A file "TRegion_vertices.dat". Format: each line represents a facet of the trimmed region by coordinates of its vertices taken into parentheses. 
 }
 \references{
 Pavel Bazovkin and Karl Mosler. An exact algorithm for weighted-mean trimmed regions in any dimension. 2010. Working paper.

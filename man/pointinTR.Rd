@@ -21,7 +21,6 @@ Matrix representing a WM trimmed region
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
 }
 \value{
 Boolean: TRUE if the point is in the WMTR, otherwise - FALSE
@@ -38,7 +37,7 @@ Pavel Bazovkin and Karl Mosler
 \examples{
 \dontrun{generTRsample("Cloud.dat")}
 \dontrun{WMTR("Cloud.dat")}
-\dontrun{tregion <- loadWMTR( 3 )}
+\dontrun{tregion <- loadWMTR( )}
 \dontrun{if(pointinTR( c(1,-2,3), tregion)) "In!" else "Out!"}
 
 }

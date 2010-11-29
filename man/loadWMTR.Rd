@@ -8,12 +8,9 @@ Loading a calculated weighted-mean trimmed region from a text file to an R objec
 Having calculated a WMT region you can load it into a matrix for working with it. 
 }
 \usage{
-loadWMTR(dim, fdir = getwd())
+loadWMTR(fdir = getwd())
 }
 \arguments{
-  \item{dim}{
-Integer number representing affine dimension of the trimmed region. 
-}
   \item{fdir}{
 String argument describing a name of a directory where the computing results are located. If empty, the working directory is considered.
 }
@@ -39,7 +36,7 @@ Pavel Bazovkin and Karl Mosler
 \dontrun{generTRsample("Cloud.dat")}
 \dontrun{WMTR("Cloud.dat")}
 \dontrun{showWMTR()}
-\dontrun{tregion <- loadWMTR( 3 )}
+\dontrun{tregion <- loadWMTR( )}
 \dontrun{tregion}
 }
 
