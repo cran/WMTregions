@@ -1,6 +1,6 @@
 generTRsample <-
-function (fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 10, 
-    alpha = 0.221, trtype = "zonoid") 
+function (fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 20, 
+    alpha = 0.05, trtype = "zonoid") 
 {
     ffullname = as.character(paste(fdir, "/", fname, sep = ""))
     write(trtype, ffullname)

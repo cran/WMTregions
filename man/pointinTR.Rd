@@ -1,12 +1,11 @@
 \name{pointinTR}
 \alias{pointinTR}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Checking whether a point is in a specified trimmed region
+Checking Whether a Point Is In a Specified Trimmed Region
 }
 \description{
 
-Checks whether a point is in a specified trimmed region
+Checks whether a point is in a specified trimmed region.
 
 }
 \usage{
@@ -14,16 +13,17 @@ pointinTR(dpoint, tregion)
 }
 \arguments{
   \item{dpoint}{
-Floating point number vector - coordinates of the point to be tested
+A vector containing the coordinates of the point to be checked.
 }
   \item{tregion}{
-Matrix representing a WM trimmed region
+A matrix object containing the WMT region in the normal-intercept representation.
 }
 }
 \details{
+\code{tregion} is normally produced by the \code{\link{loadWMTR}} function basing on a calculated WMT region.
 }
 \value{
-Boolean: TRUE if the point is in the WMTR, otherwise - FALSE
+\item{\code{IsIn}}{\code{TRUE} if the point is in the WMTR, otherwise - \code{FALSE}.}
 }
 \author{
 Pavel Bazovkin and Karl Mosler
@@ -31,6 +31,7 @@ Pavel Bazovkin and Karl Mosler
 
 \seealso{
 \code{\link{WMTR}}
+\code{\link{loadWMTR}}
 }
 
 

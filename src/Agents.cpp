@@ -36,12 +36,13 @@ public:
 
 	Point coord_center;         // Coordinates of the centroid
 
-	void PrintResults()
+	void PrintResults(int _bound)
 	{
 		//ofstream os("TRegion.dat");
 		
-		FILE *stream;
-		stream = fopen( "TRegion_vertices.dat", "w" );
+		FILE *stream, *stream_ub;
+		stream    = fopen( "TRegion_vertices.dat", "w" );
+		stream_ub = fopen( "TRegion_vertices_bound.dat", "w" );
 		
 		//os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
 		//fprintf( stream, "The calculated trimmed region: (%d facets) \n", this->trimmed_region.size() );
@@ -51,8 +52,14 @@ public:
 		// For each facet
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
 		{			
+			// For printing only a boundary facets: the upper one if _bound == 1, and the lower one if _bound == -1. Don't write anything if _bound == 0
+			bool writebound = 
+				((_bound == 1) && !(facetit->normalvec.coord[0] < 0 || facetit->normalvec.coord[1] < 0 || facetit->normalvec.coord[2] < 0)) ||
+				((_bound == -1) && !(facetit->normalvec.coord[0] > 0 || facetit->normalvec.coord[1] > 0 || facetit->normalvec.coord[2] > 0));
+			
 			//os << "( ";
 			fprintf( stream,"( " );
+			if(writebound) fprintf( stream_ub,"( " );
 
 			list<ExtremePoint>::iterator expointit;
 
@@ -61,27 +68,36 @@ public:
 			{
 				//os << "(";
 				fprintf( stream,"(" );
+				if(writebound) fprintf( stream_ub,"(" );
 
 				for(int i = 0; i < expointit->coord.size(); i++)
 				{
 					//os << expointit->coord[i] + this->coord_center.coord[i] << ";";
-					fprintf( stream,"%.3f;", expointit->coord[i] + this->coord_center.coord[i] );
+					fprintf( stream,"%.3f;", expointit->coord[i]/* + this->coord_center.coord[i]*/ );
+					if(writebound) fprintf( stream_ub,"%.3f;", expointit->coord[i]/* + this->coord_center.coord[i]*/ );
 				}
 
 				//os << ") ";
 				fprintf( stream,") " );
+				if(writebound) fprintf( stream_ub,") " );
+			
 			}
 			
 			//os << " )\n\n";
 			fprintf( stream," )\n\n" );
+			if(writebound) fprintf( stream_ub," )\n\n" );
+
 		}
 
 		//os.close();
 		fclose( stream );
+		fclose( stream_ub );
 
 		return;
 
-		ofstream tos("Timing.dat");
+		//if(!boost::filesystem::create_directory("WMTR-temp")) return;
+
+		ofstream tos("WMTR-temp/Timing.dat");
 		tos << "Collected timestamps: \n";
 		
 		list<double>::iterator tit;
@@ -118,7 +134,7 @@ public:
 
 				for(int i = 0; i < expointit->coord.size(); i++)
 				{
-					os << expointit->coord[i] + this->coord_center.coord[i] << ";";
+					os << expointit->coord[i]/* + this->coord_center.coord[i]*/ << ";";
 				}
 
 				os << ") ";
@@ -170,12 +186,13 @@ public:
 		fclose(tos);
 	}
 
-	void PrintResultsHyperplanes(char* _dir)
+	void PrintResultsHyperplanes(char* _dir, int _bound)
 	{
 
             //ofstream os(strcat(_dir, "trimmed_region_vertices2.dat"));
 		ofstream osv( "tmp_vrtheap.dat");
 		ofstream ostr( "TRegion.dat");
+		ofstream ostrbnd( "TRegion_bound.dat");
 		//ofstream os("Trimmed_region.dat");
 		
 		//os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
@@ -185,6 +202,11 @@ public:
 		// For each facet
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
 		{			
+			// For printing only a boundary facets: the upper one if _bound == 1, and the lower one if _bound == -1. Don't write anything if _bound == 0
+			bool writebound = 
+				((_bound == 1) && !(facetit->normalvec.coord[0] < 0 || facetit->normalvec.coord[1] < 0 || facetit->normalvec.coord[2] < 0)) ||
+				((_bound == -1) && !(facetit->normalvec.coord[0] > 0 || facetit->normalvec.coord[1] > 0 || facetit->normalvec.coord[2] > 0));
+			
 			list<ExtremePoint>::iterator expointit;
 
 			// For each node of the facet
@@ -192,7 +214,7 @@ public:
 			{
 				for(int i = 0; i < expointit->coord.size(); i++)
 				{
-					osv << expointit->coord[i] + this->coord_center.coord[i] << " ";
+					osv << expointit->coord[i]/* + this->coord_center.coord[i]*/ << " ";
 				}
 
 				osv << "\n";
@@ -204,14 +226,17 @@ public:
 				for(int i = 0; i < facetit->normalvec.coord.size(); i++)
 				{
 					ostr << facetit->normalvec.coord[i] << " ";
+					if(writebound) ostrbnd << facetit->normalvec.coord[i] << " ";
 				}
 
-				ostr << facetit->abs_member- Vector::ScalarMultiply(facetit->normalvec, shift) << endl;
+				ostr << facetit->abs_member/*- Vector::ScalarMultiply(facetit->normalvec, shift)*/ << endl;
+				if(writebound) ostrbnd << facetit->abs_member/*- Vector::ScalarMultiply(facetit->normalvec, shift)*/ << endl;
 			
 		}
 
 		osv.close();
 		ostr.close();
+		ostrbnd.close();
 
 	}
 
@@ -223,6 +248,9 @@ public:
 		ofstream os(filenm);
 		
 		os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
+
+		Vector shift;
+		shift.coord = this->coord_center.coord;
 
 		list<Facet>::iterator facetit;
 
@@ -237,7 +265,7 @@ public:
 			}
 
 			
-			os << " ), abs.dist. = " << facetit->abs_member << "\n\n";
+			os << " ), abs.dist. = " << -(facetit->abs_member/* - Vector::ScalarMultiply(facetit->normalvec, shift)*/) << "\n";
 		}
 
 		os.close();
@@ -653,8 +681,10 @@ public:
 
 
 
-	void GLSceneToExport()									// Here's Where We Do All The Drawing
+	void GLSceneToExport(int _bound)									// Here's Where We Do All The Drawing
 	{
+		// Only for d=3
+		if(this->coord_center.coord.size() != 3) return;
 
 		int currcol[3];
 
@@ -670,6 +700,10 @@ public:
 		vector<Point>::iterator pointit;
 
 		float fat = 0.1f;
+
+		// Typing coordinates of the mean at the first place
+		//osvisd << this->coord_center.coord[0] << " " << this->coord_center.coord[1] << " " << this->coord_center.coord[2] << endl;
+		osvisd << 0 << " " << 0 << " " << 0 << endl;
 
 		for(pointit = this->data_cloud.begin(); pointit != this->data_cloud.end(); pointit++)
 		{
@@ -707,11 +741,16 @@ public:
 		list<Facet>::iterator facetit;
 
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
-		{			
+		{
+			// For printing only a boundary facets: the upper one if _bound == 1, and the lower one if _bound == -1. Don't write anything if _bound == 0
+			if(((_bound == 1) && (facetit->normalvec.coord[0] < 0 || facetit->normalvec.coord[1] < 0 || facetit->normalvec.coord[2] < 0)) ||
+				((_bound == -1) && (facetit->normalvec.coord[0] > 0 || facetit->normalvec.coord[1] > 0 || facetit->normalvec.coord[2] > 0)))
+				continue;
 
 			if( !facetit->truncated /*&&  ++stop<flborder*/  )
 			{
-				
+
+		
 				float peak = max(fabs(facetit->normalvec.coord[0]), max(fabs(facetit->normalvec.coord[1]), fabs(facetit->normalvec.coord[2])));
 				float gr_sigma = 2;
 				float gr_mu    = 0.5f;
@@ -737,7 +776,11 @@ public:
 
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
 		{			
-						
+			// For printing only a boundary facets: the upper one if _bound == 1, and the lower one if _bound == -1. Don't write anything if _bound == 0
+			if(((_bound == 1) && (facetit->normalvec.coord[0] < 0 || facetit->normalvec.coord[1] < 0 || facetit->normalvec.coord[2] < 0)) ||
+				((_bound == -1) && (facetit->normalvec.coord[0] > 0 || facetit->normalvec.coord[1] > 0 || facetit->normalvec.coord[2] > 0)))
+				continue;
+
 
 			if( facetit->truncated /*&& ++stop<flborder*/ )
 			{
@@ -871,6 +914,34 @@ protected:
 	vector<float> weight;         // Weigts vector (non-decreasing function on the permutation)
 
 	HashTable ohash_table;        // "Optimistic" hash table
+	
+	void NormalizeWeights()
+	{
+		// Smoothing too small weights
+		for(int i = 0; i < num; i++)
+		{
+			if(this->weight[i] < 1.0f / (this->num * 100))
+				this->weight[i] = 0.0f;
+		}
+
+		float sum_of_weights = 0;
+		for(int i = 0; i < num; i++)
+		{
+			sum_of_weights += this->weight[i];
+		}
+
+		// If there is an incorrect alpha parametere
+		if(sum_of_weights < 0.01f)
+		{
+			 this->weight[num-1] = 1;
+			 sum_of_weights = 1;
+		}
+
+		for(int i = 0; i < num; i++)
+		{
+			this->weight[i] = this->weight[i] / sum_of_weights;
+		}
+	}
 
 public:
 
@@ -902,23 +973,24 @@ public:
 		{
 			int beta = 1.0f / this->alpha;
 
-			for(int i = 0; i < num; i++)
+			for(int j = num-1; j >= 0; j--)
 			{
-				if(i < beta-1)
+				if(j < beta-1)
 				{
-					this->weight[i]= 0.0f;
+					this->weight[j]= 0.0f;
 				}
-				else if(i == beta-1)
+				else if(j == num-1)
 				{
-					this->weight[i]= 1.0f / Comb(num, beta);
+					//this->weight[i]= 1.0f / Comb(num, beta);
+					this->weight[j] = ((float)beta)/num;
 				}
 				else
 				{
-					this->weight[i]= weight[i-1] * (i) / (i+1-beta);
+					this->weight[j]= weight[j+1] * (j+2-beta) / (j+1);
 				}
 			}
 		}
-		else if(this->WMTD_type == "contECH") 
+		else if(this->WMTD_type == "ECH*") 
 		{
 			float beta = 1.0f / this->alpha;
 
@@ -936,7 +1008,7 @@ public:
 				this->weight[i]= pow(alpha, num-i-1) * gmult;
 			}
 		}
-		else if(this->WMTD_type == "manual") 
+		else if(this->WMTD_type == "general") 
 		{
 		}
 		else
@@ -963,7 +1035,7 @@ public:
 	}
 
 	// Use only this constructor for this class
-	ProcessAg(string _type, float _depth, int _dim, int _num, vector<Point> _cloud):
+	ProcessAg(string _type, float _depth, int _dim, int _num, vector<Point> _cloud, vector<float> _manweights):
 																p(_dim),
 																initial_center(_dim),
 																ohash_table(_num),
@@ -997,16 +1069,16 @@ public:
 
 		}
 
-		// Set centroid to 0
-		for(it = _cloud.begin(); it != _cloud.end(); it++)
-		{
-			for(int j=0; j<dim; j++)
-			{
-				it->coord[j] = it->coord[j] - initial_center.coord[j];
+		//// Set centroid to 0
+		//for(it = _cloud.begin(); it != _cloud.end(); it++)
+		//{
+		//	for(int j=0; j<dim; j++)
+		//	{
+		//		it->coord[j] = it->coord[j] - initial_center.coord[j];
 
-			}
+		//	}
 
-		}
+		//}
 		// ************************************************************
 
 
@@ -1015,9 +1087,14 @@ public:
 		// Ordering points according to DEFAULT support vector
 		perm.Support(p);
 
-		WeightsGenerator();
+		if(this->WMTD_type == "general")
+			weight = _manweights;
+		else
+			WeightsGenerator();
 
-		this->ohash_table.weight = this->weight;
+		NormalizeWeights();
+
+		this->ohash_table.StartHashTable(this->weight);
 
 	}
 
@@ -2159,9 +2236,10 @@ protected:
 		}
 	}
 
-	vector<vector<float> > GetDefVectors_ridge(Facet _fac)
+	// Creates a matrix (d x d) with first K rows - defining vectors of _fac
+	vector<vector<float> > GetDefVectors_kFace(kFace _fac)
 	{
-		vector<vector<float> > def_vecs(this->dim-1);
+		vector<vector<float> > def_vecs(this->dim);
 		int plz = 0;
 
 		list<int>::iterator itset, itcard;
@@ -2360,12 +2438,328 @@ protected:
 
 public:
 
+	// To a given k-dimensional face find some orthogonal vector that is also orthogonal to its normal
+	Vector FindRotDirection(kFace _facet)
+	{
+		// Defining some rotation vector 
+		vector<vector<float> > def_vectors = GetDefVectors_kFace(_facet);
+
+		// Augmenting the matrix:
+		// 1. Orthogonal to normvec
+		def_vectors[_facet.K()] = _facet.normalvec.coord;
+		//def_vectors[j] = normvec.coord;
+		// 2. Last coordinates = 0 except of the last = 1
+		for(int k = _facet.K()+1; k < dim; k++)
+		{
+			vector<float> onevec(this->dim, 0);
+			onevec[k] = 1;
+
+			def_vectors[k] = onevec;
+		}
+
+		Vector rotvec(this->dim);
+
+		vector<float> bf(this->dim, 0);
+		bf[this->dim-1] = 1;
+		rotvec.coord = _facet.SolveLinearSystem(def_vectors, bf);
+
+		rotvec.Normalize();
+
+		return rotvec;
+
+	}
+
+	// Find the neighboring (k+1)-face in a given direction
+	kFace RemoveOneDoF(kFace _currface, Vector _rotvec)
+	{
+		kFace newface  = _currface;
+		Vector normvec = _currface.normalvec;
+
+		list<DataVector> crit_vectors = this->GetCriticalVectors(newface);
+
+		list<DataVector>::iterator itcrit;
+		float minplambda = 1000001;
+		float minnlambda = 1;
+		Vector deltavec(this->dim);
+
+		DataVector minp, minn;
+
+		// Searching for a minimal rotation on an angle < 90 degrees, if there is
+		for(itcrit = crit_vectors.begin(); itcrit != crit_vectors.end(); itcrit++)
+		{
+			deltavec.coord = itcrit->coord;
+			
+			float lambda = - Vector::ScalarMultiply(deltavec, normvec) / Vector::ScalarMultiply(deltavec, _rotvec);
+
+			if(lambda > 0.0000001f)
+			{
+				if (lambda < minplambda)
+				{
+					minplambda = lambda;
+					minp       = *itcrit;
+				}								
+			}
+		}
+
+		// If the rotation should done on the angle > 90 degrees
+		if( !minp.defined() )
+		{
+			for(itcrit = crit_vectors.begin(); itcrit != crit_vectors.end(); itcrit++)
+			{
+				deltavec.coord = itcrit->coord;
+				
+				float lambda = - Vector::ScalarMultiply(deltavec, normvec) / Vector::ScalarMultiply(deltavec, _rotvec);
+				
+				if(lambda <= -0.0000001f)
+				{
+					if (lambda < minnlambda)
+					{
+						minnlambda = lambda;
+						minn       = *itcrit;
+					}
+				}
+			}
+		}
+
+		DataVector neighn;      // Found neighbor
+
+		if( minp.defined() )
+		{
+			neighn  = minp;
+
+			Vector vecp = normvec;
+			Vector deltap = _rotvec;
+			deltap.Scale(minplambda);
+			vecp.Add(deltap);
+
+			newface.normalvec = vecp;
+		}
+		else
+		{
+			neighn = minn;
+
+			Vector vecn = normvec;
+			vecn.Reverse();
+			Vector deltan = _rotvec;
+			deltan.Scale(-minnlambda);
+			vecn.Add(deltan);
+
+			newface.normalvec = vecn;
+		}
+
+
+		// Normalizing the normalvec (normvec & _rotvec must have length=1)
+		float tonormal;
+		if( minp.defined() )
+			tonormal = 1.0f / (sqrt(1.0f + minplambda * minplambda));
+		else
+			tonormal = 1.0f / (sqrt(1.0f + minnlambda * minnlambda));
+
+		newface.normalvec.Scale(tonormal);
+
+		// If 2 Type II clusters do associate, create a new ${\cal{A}}_q$ 
+
+		// Modifying ${\cal X}_F$ by adding the found vector (to some existing or new ${\cal{A}}_q$)
+
+		// Editing index_perm
+		// Warning: let neighn - the found vector to be intoduced
+
+		if(neighn.start > neighn.end)
+		{
+			swap(neighn.start, neighn.end);
+
+			swap(neighn.start_typeI, neighn.end_typeI);
+		}
+
+		list<int>::iterator srcit1, srcit2; 
+		
+		// Type I - Type I
+		if(neighn.start_typeI && neighn.end_typeI)
+		{
+			// newface.index_perm stays unchanged
+
+			// Locating corresponding ${\cal{A}}$s
+			for(srcit1 = newface.anchors.begin(), srcit2 = newface.cardinals.begin();
+				srcit1 != newface.anchors.end(); 
+				srcit1++, srcit2++)
+			{
+				if(*srcit1 > neighn.start) break;
+			}
+			
+			newface.anchors.erase(srcit1); 
+			
+			int added = *srcit2;
+			srcit2--;
+			*srcit2 += added;
+			srcit2++;
+			newface.cardinals.erase(srcit2);
+			
+		}
+		// Type II - Type II
+		else if(!neighn.start_typeI && !neighn.end_typeI)
+		{
+			// Shifting start point to the right border of the type II cluster
+			int qq = neighn.start;
+			while(this->weight[qq+1] == this->weight[qq])
+			{
+				qq++;
+			}
+
+			if(qq > neighn.start)
+			{
+				swap(newface.index_perm[qq], newface.index_perm[neighn.start]);
+				neighn.start = qq;
+			}
+
+			// Shifting end point to the left border of the type II cluster
+			qq = neighn.end;
+			while(this->weight[qq-1] == this->weight[qq])
+			{
+				qq--;
+			}
+
+			if(qq < neighn.end)
+			{
+				swap(newface.index_perm[qq], newface.index_perm[neighn.end]);
+				neighn.end = qq;
+			}
+
+			// newface.index_perm is ready
+
+			// Locating place for a new ${\cal{A}}$
+			for(srcit1 = newface.anchors.begin(), srcit2 = newface.cardinals.begin();
+				srcit1 != newface.anchors.end(); 
+				srcit1++, srcit2++)
+			{
+				if(*srcit1 > neighn.start) break;
+			}
+
+			newface.anchors.insert(srcit1, neighn.start);
+			newface.cardinals.insert(srcit2, 2);
+		}
+		else
+		{
+			// Type I - Type II
+			if(neighn.start_typeI)
+			{
+				//// Shifting end point to the left border of the type II cluster
+				//int qq = neighn.end;
+				//while(this->weight[qq-1] == this->weight[qq])
+				//{
+				//	qq--;
+				//}
+
+				// newface.index_perm is ready
+
+				// Locating the ${\cal{A}}$
+				for(srcit1 = newface.anchors.begin(), srcit2 = newface.cardinals.begin();
+					srcit1 != newface.anchors.end(); 
+					srcit1++, srcit2++)
+				{
+					if(*srcit1 > neighn.start) break;
+				}
+
+				srcit2--;
+				*srcit2 += 1;
+				srcit1--;
+
+				if(*srcit1 + *srcit2 - 1 < neighn.end)
+				{
+					swap(newface.index_perm[*srcit1 + *srcit2 - 1], newface.index_perm[neighn.end]);
+					neighn.end = *srcit1 + *srcit2;
+				}
+			}
+			// Type II - Type I
+			else
+			{
+				//// Shifting start point to the right border of the type II cluster
+				//int qq = neighn.start;
+				//while(this->weight[qq+1] == this->weight[qq])
+				//{
+				//	qq++;
+				//}
+
+				// newface.index_perm is ready
+
+				// Locating the ${\cal{A}}$
+				for(srcit1 = newface.anchors.begin(), srcit2 = newface.cardinals.begin();
+					srcit1 != newface.anchors.end(); 
+					srcit1++, srcit2++)
+				{
+					if(*srcit1 > neighn.start) break;
+				}
+
+				*srcit1 -= 1;
+				*srcit2 += 1;
+
+				if(*srcit1 > neighn.start)
+				{
+					swap(newface.index_perm[*srcit1], newface.index_perm[neighn.start]);
+					neighn.start = *srcit1;
+				}
+			}
+		}
+
+		newface.CatchOneDoF();
+		return newface;
+	}
+
+public:
+
 	void ComputeHyperplanes()
 	{
-		
-		vector<float> b(this->dim, 0);
+		// ************************* Smart first facet ****************************
 
+
+		// Create an "empty" first facet
+		kFace ffac(this->dim, 0);
+
+		// Initial $\pi(i)$ - trivial
+		vector<int>  initial_ind(num);
+		for(int fu = 0; fu < num; fu++)
+			initial_ind[fu] = fu;
+
+		ffac.index_perm = initial_ind;
+
+		// Initial support vector determining the direction for the ffacet search
+		Vector initvec(this->dim);
+
+		// Getting the first permutation - only once for the first facet!
+		this->perm.Support(initvec);
+
+		// Now, only anchors and cardinals must be constructed (also normalvec)
+
+		ffac.normalvec = initvec;
+		ffac.normalvec.Normalize();
+
+		// Grasping d-1 degrees of freedom
+		for(int j = 0; j < this->dim - 1; j++)
+		{
+			// Create the direction to shift the normal vector
+			Vector rotvec = this->FindRotDirection(ffac);
+
+			// Moving normvec by means of rotvec, which is orthogonal to normvec
+
+			ffac = this->RemoveOneDoF(ffac, rotvec);
+	
+		}
 		
+		//ffac.normalvec.Normalize();
+		Facet found_facet(ffac);
+		found_facet.doubled   = false;
+
+		Point ffnode(this->dim);
+		ffnode.coord = CurrentExtremePoint(found_facet.index_perm);
+		found_facet.CalculateAbsoluteMemberH(ffnode);
+		
+		// Push new facet to the algorithm queue
+		this->queue.push_front(found_facet);
+
+		// ************************************************************************
+
+
+	
+		/*
 		// ************************** Create the first facet **********************
 
 		list<int>    fdefset(dim);
@@ -2446,6 +2840,7 @@ public:
 			this->queue.push_front(ffacet);
 
 		}
+		*/
 
 		::RecordTime();
 		
@@ -2534,8 +2929,8 @@ public:
 							currfacet.cardinals.erase(itcardnew);
 						}
 						
-						Facet lowfac = currfacet;
-						lowfac.marked = false;
+						kFace newridge = currfacet;
+						newridge.RelaxOneDoF();
 						
 						// Modifying index_perm
 						int ww1 = origset, ww2 = origset + origcard - 1;
@@ -2543,22 +2938,18 @@ public:
 						{
 							if((*itcrack)[ww])
 							{
-								lowfac.index_perm[ww1] = currfacet.index_perm[origset + ww];
+								newridge.index_perm[ww1] = currfacet.index_perm[origset + ww];
 								ww1++;
 							}
 							else
 							{
-								lowfac.index_perm[ww2] = currfacet.index_perm[origset + ww];
+								newridge.index_perm[ww2] = currfacet.index_perm[origset + ww];
 								ww2--;
 							}
 						}
 
-						// Taking a vector to detect direction of an infinitesimal rotation (either clockwise or counterclockwise)
-						Vector infinitesimalvec(this->dim);
-						infinitesimalvec.FromPointToPoint(perm.points[lowfac.index_perm[origset]], perm.points[lowfac.index_perm[origset + origcard - 1]]);
-
 						// Saving removed vector (one of the possible)
-						//lowfac.old_vector.FromPointToPoint(this->perm.points[lowfac.index_perm[origset]], this->perm.points[lowfac.index_perm[origset + bulk]]);
+						//newridge.old_vector.FromPointToPoint(this->perm.points[newridge.index_perm[origset]], this->perm.points[newridge.index_perm[origset + bulk]]);
 						
 						// Recovering currfacet
 						if(bulk < itcrack->size()-1)
@@ -2580,22 +2971,33 @@ public:
 
 						// currfacet recovered
 
-						vector<vector<float> > low_def_vectors = GetDefVectors_ridge(lowfac);
+						// Either only marking or processing the currfacet
+						if(!currfacet.marked)
+						{
+							this->ohash_table.MarkRidge(newridge);
+							continue;
+						}
 
-						low_def_vectors[dim-2] = currfacet.normalvec.coord;  // or ...currfacet.oldvector.coord
-						
-						Vector rotvec(this->dim);
-						rotvec.coord = lowfac.GiveBasis(low_def_vectors, b);
+						// If the ridge has been double blocked - don't process it 
+						if(this->ohash_table.CheckRidge(newridge))
+							continue;
+
+						// Taking a vector to detect direction of an infinitesimal rotation (either clockwise or counterclockwise)
+						Vector infinitesimalvec(this->dim);
+						infinitesimalvec.FromPointToPoint(perm.points[newridge.index_perm[origset]], perm.points[newridge.index_perm[origset + origcard - 1]]);
+
+						Vector rotvec = this->FindRotDirection(newridge);
+
 						if( Vector::ScalarMultiply(infinitesimalvec, rotvec) <  -0.00001f)
 							rotvec.Reverse();
 
-						rotvec.Normalize();
 						// Now rotvec is orthogonal to currfacet.normalvec. <rotvec;currfacet.normalvec> is a B2 basis
 						// Direction of rotation (clcws. or counterclcws.) is shown by infinitesimalvec 
 
-						// Calculating unique number for the lowfac in the combinatorially defined class of ridges
+						/*
+						// Calculating unique number for the newridge in the combinatorially defined class of ridges
 						Vector univec(this->dim);
-						univec.coord = CurrentExtremePoint(lowfac.index_perm);
+						univec.coord = CurrentExtremePoint(newridge.index_perm);
 
 						Vector proj1(this->dim), proj2(this->dim), proj(this->dim);
 						proj1 = currfacet.normalvec; proj1.Scale(Vector::ScalarMultiply(univec, currfacet.normalvec));
@@ -2604,249 +3006,17 @@ public:
 
 						float unifl  = proj.coord[0] / proj.GetLength();
 						// Managing 'float comparison' problem
-						int   uniint = (int)(unifl * 11512);
+						int   uniint = (int)(unifl * 111512);
+						*/
 
 						//::StopCumulTime();
 
 
-						// Either only marking or processing the currfacet
-						if(!currfacet.marked)
-						{
-							this->ohash_table.MarkRidge(lowfac, uniint);
-							continue;
-						}
+						Facet neigh_facet(this->RemoveOneDoF(newridge, rotvec));
+						neigh_facet.marked = false;
 
-						// If the ridge has been double blocked - don't process it 
-						if(this->ohash_table.CheckRidge(lowfac, uniint))
-							continue;
+						this->queue.push_front(neigh_facet);
 
-						// Searching for critical hyperplanes
-						list<DataVector> crit_vectors = this->GetCriticalVectors(lowfac);
-
-						list<DataVector>::iterator itcrit;
-						float minplambda = 1000001;
-						float minnlambda = 1;
-						Vector deltavec(this->dim);
-
-						DataVector minp, minn;
-
-						// Searching for a minimal rotation on an angle < 90 degrees, if there is
-						for(itcrit = crit_vectors.begin(); itcrit != crit_vectors.end(); itcrit++)
-						{
-							deltavec.coord = itcrit->coord;
-							
-							float lambda = - Vector::ScalarMultiply(deltavec, currfacet.normalvec) / Vector::ScalarMultiply(deltavec, rotvec);
-
-							if(lambda > 0.00001f)
-							{
-								if (lambda < minplambda)
-								{
-									minplambda = lambda;
-									minp       = *itcrit;
-								}								
-							}
-						}
-
-						// If the rotation should done on the angle > 90 degrees
-						if( !minp.defined() )
-						{
-							for(itcrit = crit_vectors.begin(); itcrit != crit_vectors.end(); itcrit++)
-							{
-								deltavec.coord = itcrit->coord;
-								
-								float lambda = - Vector::ScalarMultiply(deltavec, currfacet.normalvec) / Vector::ScalarMultiply(deltavec, rotvec);
-								
-								if(lambda <= -0.00001f)
-								{
-									if (lambda < minnlambda)
-									{
-										minnlambda = lambda;
-										minn       = *itcrit;
-									}
-								}
-							}
-						}
-
-						DataVector neighn;      // Found neighbor
-
-						if( minp.defined() )
-						{
-							neighn  = minp;
-
-							Vector vecp = currfacet.normalvec;
-							Vector deltap = rotvec;
-							deltap.Scale(minplambda);
-							vecp.Add(deltap);
-
-							lowfac.normalvec = vecp;
-						}
-						else
-						{
-							neighn = minn;
-
-							Vector vecn = currfacet.normalvec;
-							vecn.Reverse();
-							Vector deltan = rotvec;
-							deltan.Scale(-minnlambda);
-							vecn.Add(deltan);
-
-							lowfac.normalvec = vecn;
-						}
-
-
-						// Normalizing the normalvec (currfacet.normalvec & rotvec must have length=1)
-						float tonormal;
-						if( minp.defined() )
-							tonormal = 1.0f / (sqrt(1.0f + minplambda * minplambda));
-						else
-							tonormal = 1.0f / (sqrt(1.0f + minnlambda * minnlambda));
-
-						lowfac.normalvec.Scale(tonormal);
-
-						// If 2 Type II clusters do associate, create a new ${\cal{A}}_q$ 
-
-						// Modifying ${\cal X}_F$ by adding the found vector (to some existing or new ${\cal{A}}_q$)
-
-						// Editing index_perm
-						// Warning: let neighn - the found vector to be intoduced
-
-						if(neighn.start > neighn.end)
-						{
-							swap(neighn.start, neighn.end);
-
-							swap(neighn.start_typeI, neighn.end_typeI);
-						}
-
-						list<int>::iterator srcit1, srcit2; 
-						
-						// Type I - Type I
-						if(neighn.start_typeI && neighn.end_typeI)
-						{
-							// lowfac.index_perm stays unchanged
-
-							// Locating corresponding ${\cal{A}}$s
-							for(srcit1 = lowfac.anchors.begin(), srcit2 = lowfac.cardinals.begin();
-								srcit1 != lowfac.anchors.end(); 
-								srcit1++, srcit2++)
-							{
-								if(*srcit1 > neighn.start) break;
-							}
-							
-							lowfac.anchors.erase(srcit1); 
-							
-							int added = *srcit2;
-							srcit2--;
-							*srcit2 += added;
-							srcit2++;
-							lowfac.cardinals.erase(srcit2);
-							
-						}
-						// Type II - Type II
-						else if(!neighn.start_typeI && !neighn.end_typeI)
-						{
-							// Shifting start point to the right border of the type II cluster
-							int qq = neighn.start;
-							while(this->weight[qq+1] == this->weight[qq])
-							{
-								qq++;
-							}
-
-							if(qq > neighn.start)
-							{
-								swap(lowfac.index_perm[qq], lowfac.index_perm[neighn.start]);
-								neighn.start = qq;
-							}
-
-							// Shifting end point to the left border of the type II cluster
-							qq = neighn.end;
-							while(this->weight[qq-1] == this->weight[qq])
-							{
-								qq--;
-							}
-
-							if(qq < neighn.end)
-							{
-								swap(lowfac.index_perm[qq], lowfac.index_perm[neighn.end]);
-								neighn.end = qq;
-							}
-
-							// lowfac.index_perm is ready
-
-							// Locating place for a new ${\cal{A}}$
-							for(srcit1 = lowfac.anchors.begin(), srcit2 = lowfac.cardinals.begin();
-								srcit1 != lowfac.anchors.end(); 
-								srcit1++, srcit2++)
-							{
-								if(*srcit1 > neighn.start) break;
-							}
-
-							lowfac.anchors.insert(srcit1, neighn.start);
-							lowfac.cardinals.insert(srcit2, 2);
-						}
-						else
-						{
-							// Type I - Type II
-							if(neighn.start_typeI)
-							{
-								//// Shifting end point to the left border of the type II cluster
-								//int qq = neighn.end;
-								//while(this->weight[qq-1] == this->weight[qq])
-								//{
-								//	qq--;
-								//}
-
-								// lowfac.index_perm is ready
-
-								// Locating the ${\cal{A}}$
-								for(srcit1 = lowfac.anchors.begin(), srcit2 = lowfac.cardinals.begin();
-									srcit1 != lowfac.anchors.end(); 
-									srcit1++, srcit2++)
-								{
-									if(*srcit1 > neighn.start) break;
-								}
-
-								srcit2--;
-								*srcit2 += 1;
-								srcit1--;
-
-								if(*srcit1 + *srcit2 - 1 < neighn.end)
-								{
-									swap(lowfac.index_perm[*srcit1 + *srcit2 - 1], lowfac.index_perm[neighn.end]);
-									neighn.end = *srcit1 + *srcit2;
-								}
-							}
-							// Type II - Type I
-							else
-							{
-								//// Shifting start point to the right border of the type II cluster
-								//int qq = neighn.start;
-								//while(this->weight[qq+1] == this->weight[qq])
-								//{
-								//	qq++;
-								//}
-
-								// lowfac.index_perm is ready
-
-								// Locating the ${\cal{A}}$
-								for(srcit1 = lowfac.anchors.begin(), srcit2 = lowfac.cardinals.begin();
-									srcit1 != lowfac.anchors.end(); 
-									srcit1++, srcit2++)
-								{
-									if(*srcit1 > neighn.start) break;
-								}
-
-								*srcit1 -= 1;
-								*srcit2 += 1;
-
-								if(*srcit1 > neighn.start)
-								{
-									swap(lowfac.index_perm[*srcit1], lowfac.index_perm[neighn.start]);
-									neighn.start = *srcit1;
-								}
-							}
-						}
-
-						this->queue.push_front(lowfac);
 
 
 
@@ -3203,6 +3373,7 @@ private:
 	string WMTD_type;
 	float depth;                  // Parameter for computing trimmed region
 	int   num  ;                  // Number of points
+	vector<float> manweights;
 
 public:
 
@@ -3228,6 +3399,18 @@ public:
 			is >> dim;
 			is >> num;
 
+			// If the type of the trimmed region is given by manual specifying of the weight vector
+			if(this->WMTD_type == "general")
+			{
+				vector<float> tmpwe(num);
+				manweights = tmpwe;
+				for(int i = 0; i < num; i++)
+				{
+					is >> manweights[i];
+
+				}
+			}
+
 			// Reading coordinates to objects...
 			for(int i=0; i<num; i++)
 			{
@@ -3254,7 +3437,7 @@ public:
 	}
 
 	// Receive cloud of points from the specified text file
-	int Receive(int _d, int _n, int _ind, string _type)
+	int Receive(int _d, int _n, int _ind, char* _type, char* _dir)
 	{
 		cloud.clear();
 
@@ -3262,7 +3445,7 @@ public:
 		{
 			char filenm[200];
 			sprintf(filenm, "Cloud_%d_%d_%d.dat", _d, _n, _ind);
-			ifstream is(filenm);     // Open file with data
+			ifstream is(strcat(_dir,filenm));     // Open file with data
 
 			//is >> WMTD_type;
 			WMTD_type = _type;
@@ -3271,6 +3454,18 @@ public:
 			
 			is >> dim;
 			is >> num;
+
+			// If the type of the trimmed region is given by manual specifying of the weight vector
+			if(this->WMTD_type == "general")
+			{
+				vector<float> tmpwe(num);
+				manweights = tmpwe;
+				for(int i = 0; i < num; i++)
+				{
+					is >> manweights[i];
+
+				}
+			}
 
 			// Reading coordinates to objects...
 			for(int i=0; i<num; i++)
@@ -3297,10 +3492,10 @@ public:
 		return 0;
 	}
 
-	list<Facet> StartComputing()
+	/*list<Facet>*/void StartComputing(ResultAg* _result_agent)
 	{
 		// Creating main processor for realizing algorithm 
-		ProcessAg* processor = new ProcessAg(WMTD_type, depth, dim, num, cloud);
+		ProcessAg* processor = new ProcessAg(WMTD_type, depth, dim, num, cloud, manweights);
 
 		this->cloud    = processor->perm.points;
 		this->centroid = processor->initial_center;
@@ -3315,7 +3510,8 @@ public:
 		else
 			processor->CalculateAllVertices();
 
-		return processor->ReadyTR();
+		//return processor->ReadyTR();
+		_result_agent->trimmed_region = processor->ReadyTR();
 
 	}
 
@@ -3326,7 +3522,7 @@ public:
 
 extern "C"{
 
-int  ComputeWMTR(char** nameofsource, char** _wdir)			// Window Show State
+int  ComputeWMTR(char** nameofsource, char** _wdir, int* _bound)			// Window Show State
 {
 	
 	bool single_mode = true;
@@ -3338,13 +3534,13 @@ int  ComputeWMTR(char** nameofsource, char** _wdir)			// Window Show State
 	{
 		int res = input_agent->Receive(*nameofsource, *_wdir);
 
-		result_agent->trimmed_region = input_agent->StartComputing();
+		/*result_agent->trimmed_region = */input_agent->StartComputing(result_agent);
 		result_agent->data_cloud     = input_agent->cloud;
 		result_agent->coord_center   = input_agent->centroid;
 
-		result_agent->PrintResultsHyperplanes(*_wdir);
-		result_agent->PrintResults();
-		result_agent->GLSceneToExport();
+		result_agent->PrintResultsHyperplanes(*_wdir, *_bound);
+		result_agent->PrintResults(*_bound);
+		result_agent->GLSceneToExport(*_bound);
 	}
 	else
 	// Group mode
@@ -3380,12 +3576,12 @@ int  ComputeWMTR(char** nameofsource, char** _wdir)			// Window Show State
 						}
 					}
 
-					int indcount = 1;
+					int indcount = 2;
 					for(int ivar = 1; ivar <= indcount; ivar ++)
 					{
-						if(input_agent->Receive(dvar, nvar, ivar, trtype) == 0)
+						if(input_agent->Receive(dvar, nvar, ivar, trtype, *_wdir) == 0)
 						{
-							result_agent->trimmed_region = input_agent->StartComputing();
+							/*result_agent->trimmed_region = */input_agent->StartComputing(result_agent);
 							result_agent->data_cloud     = input_agent->cloud;
 							result_agent->coord_center   = input_agent->centroid;
 

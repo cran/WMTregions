@@ -1,55 +1,77 @@
 \name{WMTR}
 \alias{WMTR}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Calculating WMTR from the empirical data given in a text file
+Calculating WMT Regions of the Empirical Data
 }
 \description{
-The function calculates WMTR of a defined type and data from a specified text file.    
+The function calculates a weighted-mean trimmed (WMT) region of a certain type and data from a specified text file.    
 }
 \usage{
-WMTR(fname = "Cloud.dat", fdir = getwd())
+WMTR(fname = "Cloud.dat", fdir = getwd(), bound = 0)
 }
 \arguments{
   \item{fname}{
-String argument describing a name of the data file.
+The name of the data file.
 }
   \item{fdir}{
-String argument describing a name of a directory where the data file is located. If empty, the file is taken from the working directory.
+A path to the directory where the input and output files should be located. The default value is the \R working directory.
+}
+  \item{bound}{
+\kbd{1} if the upper boundary to be computed, \kbd{-1} if the lower boundary to be computed, \kbd{0} if the whole WMT region to be computed.
 }
 }
 \details{
-The format of a data file:
+The format of the input data file:
+\enumerate{
+\item Type of the trimmed region (zonoid, ECH, ECH*, geometrically trimmed; given weight vector)
 
-1. WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{geometrical})
+\emph{Format:} A text value from the following set: \samp{zonoid}, \samp{ECH}, \samp{ECH*}, \samp{geometrical}, \samp{general}.  \samp{general} is used for the case when the weights are given manually instead of being automatically generated basing on the WMT region type and the depth parameter. 
 
-2. Depth parameter \var{alpha} - floating point number in [0,1[, e.g. 0.221
+\item Depth parameter
 
-3. Dimension \var{dim} - integer number > 2
+\emph{Format:} A floating point number from the interval \eqn{[0,\dots,1)}.
 
-4. Number of data points \var{num} - integer number > \var{dim}
+\item Dimension
 
-5. Serially written coordinates of the data points - \var{dim * var} floating point numbers
+\emph{Format:} An integer number \eqn{d \ge 2}.
 
+\item Number of points of the data cloud
+
+\emph{Format:} An integer number \eqn{n > d}.
+
+\item (\emph{If the type \samp{general} is selected)} The weight vector
+
+\emph{Format:} \eqn{n} non-decreasing floating point numbers matching the requirements for the weight vector.
+
+\item Coordinates of each point
+
+\emph{Format:} \eqn{n} groups of \eqn{d} floating point numbers, each group representing the coordinates of a point from the data cloud. 
+}
+
+The points must be in the general position.
 }
 \value{
-Computational results are stored in the working directory in:
+\item{\file{TRegion.dat}}{A file in the directory \code{fdir}. The calculated WMT region with facets represented by a normal and an intercept, namely by \eqn{d+1} numbers giving the equation of the hyperplane containing the facet. The first \eqn{d} of these numbers are coordinates of a normal to the facet, which is directed outward the WMT region. The last number defines the intercept.} 
+\item{\file{TRegion_vertices.dat}}{A file in the directory \code{fdir}. The calculated WMT region with facets represented by a coordinates of its vertices. A vertex coordinates are grouped by brackets, while vertices are also grouped by brackets into a facet.} 
+\item{\file{TRegion_bound.dat}}{An auxiliary file with a boundary of the calculated WMT region. The format is similar to \file{TRegion.dat}.}
+\item{\file{TRegion_vertices_bound.dat}}{An auxiliary file with a boundary of the calculated WMT region. The format is similar to \file{TRegion_vertices.dat}.}
 
-1. A file "TRegion.dat". Format: each line represents a facet of the trimmed region, where first \var{dim} floating point numbers are coordinates of a normal to the facet and the last one - its absolute distance from the origin.
-
-2. A file "TRegion_vertices.dat". Format: each line represents a facet of the trimmed region by coordinates of its vertices taken into parentheses. 
 }
 \references{
-Pavel Bazovkin and Karl Mosler. An exact algorithm for weighted-mean trimmed regions in any dimension. 2010. Working paper.
+Bazovkin, P. and Mosler, K. An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension. 201x. Submitted to JSS.
 }
 \author{
 Pavel Bazovkin and Karl Mosler
 }
 
+\seealso{
+\code{\link{visualWMTR}}
+}
+
 \examples{
 \dontrun{generTRsample("Cloud.dat")}     # Generate a sample data file in the working directory
 \dontrun{WMTR("Cloud.dat")}              # Processing the file from the working directory
-\dontrun{showWMTR()}
+\dontrun{visualWMTR()}
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

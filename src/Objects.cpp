@@ -104,21 +104,15 @@ public:
 
 	Point()
 	{
-		for(int i=0; i<dim; i++)
-		{
-			float refpoint = 0;
-			coord.push_back(refpoint);
-		}
+		vector<float> invec(dim, 0);
+		coord = invec;
 	}
 
 	Point(int _dim):
 				SpaceObject(_dim)
 	{
-		for(int i=0; i<dim; i++)
-		{
-			float refpoint = 0;
-			coord.push_back(refpoint);
-		}
+		vector<float> invec(dim, 0);
+		coord = invec;
 	}
 
 	// For 3d-case for convenience
@@ -509,19 +503,122 @@ public:
 };
 
 
-class Facet : public SpaceObject
+class kFace : public SpaceObject
+{
+protected:
+	
+	int real_dim;     // Real dimension in d-space
+
+public:
+
+	Vector normalvec;                      // Some normal to the k-face
+	
+	// Combinatoric stuff
+	list<int>   anchors;                // Array of anchors for defining subsets
+	list<int>   cardinals;              // Cardinals of defining subsets in correspondence with anchors
+
+	vector<int> index_perm;             // $\pi$ function for the facet (more precisely, it should be $\Pi$ class of $\pi$-s )
+
+
+	kFace(int _dim, int _K):
+			SpaceObject(_dim),
+			normalvec(_dim)
+	{
+		real_dim = _K;
+	}
+
+	int K()
+	{
+		return real_dim;
+	}
+
+	// Increasing the real dimension by 1
+	void CatchOneDoF()
+	{
+		if(this->K() < this->Dim()-1) this->real_dim++;
+	}
+
+	// Reducing the real dimension by 1
+	void RelaxOneDoF()
+	{
+		if(this->K() > 0) this->real_dim--;
+	}
+
+	vector<float> SolveLinearSystem(vector<vector<float> > A, vector<float> b)
+	{
+		// The first stage of Gaussian elimination
+		for(int i = 0; i < dim; i++)
+		{
+			// Interchanging rows if the main element is 0
+			//if(A[i][i] == 0)
+			if(fabs(A[i][i]) < 0.001f)
+			{
+				for(int j = i+1; j < dim; j++)
+				{
+					if(A[j][i] != 0)
+					{
+						vector<float> tempvc = A[i];
+						A[i] = A[j];
+						A[j] = tempvc;
+						float tempb = b[i];
+						b[i] = b[j];
+						b[j] = tempb;
+						break;
+					}
+				}
+			}
+
+			// Normalizing the current row
+			float coeff = A[i][i];
+			for(int k = i; k < dim; k++)
+			{
+				A[i][k] = A[i][k] / coeff; 
+			}
+			b[i] = b[i] / coeff;
+
+			// Setting to 0 the lower subcolumn
+			for(int j = i+1; j < dim; j++)
+			{
+				coeff = A[j][i];
+				
+				for(int k = i; k < dim; k++)
+				{
+					A[j][k] = A[j][k] - A[i][k] * coeff; 
+				}
+				b[j] = b[j] - b[i] * coeff; 
+			}
+		}
+
+		// The second stage of Gaussian elimination
+		for(int i = dim-1; i >= 0; i--)
+		{
+			// Setting to 0 the upper subcolumn
+			for(int j = i-1; j >= 0; j--)
+			{
+				float coeff = A[j][i];
+				
+				A[j][i] = 0; 
+				b[j] = b[j] - b[i] * coeff; 
+			}
+		}
+
+		return b;
+	}
+	
+};
+
+
+class Facet : public kFace
 {
 public:
 
-	list<ExtremePoint> nodes;
-
-	Vector normalvec;                      // Non-absolute coordinates of the hyperplane
+	list<ExtremePoint> nodes;  
 
 	//Vector direction;					   // Orientation of the facet
 
 	vector<int> basic_perm;				   // The index array of the point adding which we have got this facet
 
-	int zone;                              // Indicates zone in permutation, in which facet's nodes have differences: 0 - before border_index, 1 - after it.
+	int zone;                              // Indicates zone in permutation, in which facet's nodes have differences: 0 - before border_index, 1 - after it. 
 
 	bool truncated;                        // If this facet is truncated
 
@@ -530,8 +627,7 @@ public:
 	bool marked;                           // Whether all ridges are already marked
 
 	Facet(int _dim):
-				SpaceObject(_dim),
-					normalvec(_dim)
+				kFace(_dim,_dim-1)
 	{
 		truncated = false;
 		marked    = false;
@@ -539,22 +635,28 @@ public:
 	}
 
 	Facet(int _dim, bool _trunc):
-				SpaceObject(_dim),
-					normalvec(_dim)
+				kFace(_dim,_dim-1)
 	{
 		truncated = _trunc;
 		marked    = false;
 
 	}
 
+	Facet(kFace _face):
+		kFace(_face)
+	{
+		marked    = false;
+	}
+
+
 	// Gives the hash code for the facet IF nodes are ordered (!!!Warning!!!)
-	// Returns (n + d * 32)-bit hash (n for the basic map and 32 for each epoint)
+	// Returns (n + d * 32)-bit hash (n for the basic map and 32 for each epoint) 
 	boost::dynamic_bitset<> GetHashMap()
 	{
 		int amount = nodes.begin()->index_perm.size();
 
 		int volume = amount + dim * 32;
-
+		
 		boost::dynamic_bitset<> hash(volume);
 
 		// Implementing basic map into the hash
@@ -599,7 +701,7 @@ public:
 
 		// Warning: not optimal insertion algorithm!
 		list<ExtremePoint>::iterator nodeit;                   // Iterator for the nodes of facets
-
+		
 		for(nodeit = nodes.begin(); nodeit != nodes.end(); nodeit++)
 		{
 
@@ -643,7 +745,7 @@ public:
 
 		// Warning: not optimal insertion algorithm!
 		list<ExtremePoint>::iterator nodeit;                   // Iterator for the nodes of facets
-
+		
 		for(nodeit = nodes.begin(); nodeit != nodes.end(); nodeit++)
 		{
 
@@ -667,92 +769,24 @@ public:
 
 	// *** To hyperplane approach ***
 
-	boost::dynamic_bitset<> basic_scheme;  // The basic map for this facet (except d points with variable positions defining the facet)
-
+	boost::dynamic_bitset<> basic_scheme;  // The basic map for this facet (except d points with variable positions defining the facet) 
+	
 	list<int>     def_set;       // A set of $d$ points from the data cloud defining a position of the facet (without the absolute member)
 
 	int           old_point;     // The neighbour from which a current facet is obtained
-	Vector        old_normal;    // The neighbour's normal from which a current facet is obtained
-	Vector		  old_vector;    // A vector tossed off when generating the facet
+	Vector        old_normal;    // The neighbour's normal from which a current facet is obtained  
+	Vector		  old_vector;    // A vector tossed off when generating the facet  
 
 	int           got_point;     // An obtained point while generating a current facet
 
-	int			  anchor;        // $k$ from (8) the number of points lower than the basis
+	int			  anchor;        // $k$ from (8) the number of points lower than the basis 
 
-	float         abs_member;    // The absolute member in the facet's hyperplane equation
+	float         abs_member;    // The absolute member in the facet's hyperplane equation 
 
-	bool          pos_ready;     // Whether a position is calculated
+	bool          pos_ready;     // Whether a position is calculated 
 	bool          doubled;       // If it is the second facet for the current def_set
+	
 
-	// Generalized stuff
-	list<int>   anchors;                // Array of anchors for defining subsets
-	list<int>   cardinals;              // Cardinals of defining subsets in correspondence with anchors
-
-	vector<int> index_perm;             // $\pi$ function for the facet (more precisely, it should be $\Pi$ class of $\pi$-s )
-
-
-protected:
-
-	vector<float> SolveLinearSystem(vector<vector<float> > A, vector<float> b)
-	{
-		// The first stage of Gaussian elimination
-		for(int i = 0; i < dim; i++)
-		{
-			// Interchanging rows if the main element is 0
-			//if(A[i][i] == 0)
-			if(fabs(A[i][i]) < 0.001f)
-			{
-				for(int j = i+1; j < dim; j++)
-				{
-					if(A[j][i] != 0)
-					{
-						vector<float> tempvc = A[i];
-						A[i] = A[j];
-						A[j] = tempvc;
-						float tempb = b[i];
-						b[i] = b[j];
-						b[j] = tempb;
-						break;
-					}
-				}
-			}
-
-			// Normalizing the current row
-			float coeff = A[i][i];
-			for(int k = i; k < dim; k++)
-			{
-				A[i][k] = A[i][k] / coeff;
-			}
-			b[i] = b[i] / coeff;
-
-			// Setting to 0 the lower subcolumn
-			for(int j = i+1; j < dim; j++)
-			{
-				coeff = A[j][i];
-
-				for(int k = i; k < dim; k++)
-				{
-					A[j][k] = A[j][k] - A[i][k] * coeff;
-				}
-				b[j] = b[j] - b[i] * coeff;
-			}
-		}
-
-		// The second stage of Gaussian elimination
-		for(int i = dim-1; i >= 0; i--)
-		{
-			// Setting to 0 the upper subcolumn
-			for(int j = i-1; j >= 0; j--)
-			{
-				float coeff = A[j][i];
-
-				A[j][i] = 0;
-				b[j] = b[j] - b[i] * coeff;
-			}
-		}
-
-		return b;
-	}
 
 public:
 
@@ -770,17 +804,6 @@ public:
 		// Set a direction of the facet (relat. 0-point)
 
 		pos_ready = true;    // Position calculated
-	}
-
-	vector<float> GiveBasis(vector<vector<float> > A, vector<float> b)
-	{
-		// Augmenting matrix and vector (to get non-vanishing solution)
-		b[dim-1] = 1;
-		vector<float> sinvec(dim, 1);
-		A.push_back(sinvec);
-
-		// The solution is obtained
-		return SolveLinearSystem(A, b);
 	}
 
 	vector<float> GiveVecBasis(vector<Vector> _defvecs, int _replace)
@@ -1097,7 +1120,66 @@ public:
 
 protected:
 
-	unsigned int HashCode_ridge(Facet _ridge, int _unique)
+	vector<int> wstairs;
+
+	unsigned int HashCode_ridgeCombin(kFace _ridge)
+	{
+		//::ResumeCumulTime();
+
+		// Define how many indices are packed into one integer
+		int pack = 2; int indspace = 32 / pack;
+		boost::dynamic_bitset<> hmap((expbase+pack-(expbase%pack)) * indspace);
+		//boost::dynamic_bitset<> hmap(expbase * _ridge.anchors.size() + (expbase - _ridge.Dim())*32);
+		hmap.reset();
+
+		// General positioning info
+		for(int i = 0; i < this->expbase; i++)
+		{
+			hmap.m_bits[_ridge.index_perm[i] / pack] += (wstairs[i] << indspace * (_ridge.index_perm[i] % pack));
+		}
+
+		// Mapping info about all ${\cal A}_l$ 
+		int alcount = -1;
+		list<int>::iterator itset, itcard;
+		for(itset = _ridge.anchors.begin(), itcard = _ridge.cardinals.begin();
+			itset != _ridge.anchors.end();
+			itset++, itcard++, alcount--)
+		{
+			int _strt = *itset;
+			int _stp  = *itset + *itcard;
+			for(int i = _strt; i < _stp; i++)
+			{
+				//hmap.m_bits[_ridge.index_perm[i]] = alcount;
+				int toadd = ((alcount-wstairs[i]) << indspace * (_ridge.index_perm[i] % pack));
+				hmap.m_bits[_ridge.index_perm[i] / pack] += toadd;
+			}		
+		}
+
+
+		const int prime = 2147483647;  // Mersenne prime number $2^31-1$
+		
+		boost::uint64_t psum = 0;
+		for(int i = 0; i < hmap.m_bits.size(); i++)
+		{		
+			// Scramble the hash
+			hmap.m_bits[i] ^= -i;
+
+			boost::uint64_t toadd = ((boost::uint64_t)(hmap.m_bits[i]) << (i%31)) % prime;
+
+			psum += toadd;
+		}
+
+		psum = psum % prime;
+
+		// Now, psum == (hmap % prime). The result is strongly exact!
+
+		// Narrowing interval for hashing (to reduce a hash table)
+
+		//::StopCumulTime();
+		return (unsigned int)psum % this->ceiling;
+	}
+
+	unsigned int HashCode_ridge(kFace _ridge, int _unique)
 	{
 		//::ResumeCumulTime();
 		boost::dynamic_bitset<> hmap(expbase * _ridge.anchors.size() + 32);
@@ -1229,16 +1311,29 @@ protected:
 	boost::dynamic_bitset<> mass_ridge1;
 	boost::dynamic_bitset<> mass_ridge2;
 
+public:
+
+	void Reset()
+	{
+		mass.reset();
+		mass_ridge1.reset();
+		mass_ridge2.reset();
+	}
+
+protected:
+	void InitializeHash()
+	{
+		ceiling = mass_ridge1.size();
+		Reset();
+	}
+
 	HashTable()
 		:mass(1),
 		mass_ridge1(83234597),
 		mass_ridge2(83234597)
 	{
 		this->expbase = 0;
-		ceiling = mass_ridge1.size();
-		mass.reset();
-		mass_ridge1.reset();
-		mass_ridge2.reset();
+		InitializeHash();
 	}
 
 public:
@@ -1246,20 +1341,24 @@ public:
 	HashTable(int _expbase)
 		:mass(1),
 		mass_ridge1(83234597),
-		mass_ridge2(83234597)
+		mass_ridge2(83234597),
+		wstairs(_expbase)
 	{
 		this->expbase = _expbase;
-		ceiling = mass_ridge1.size();
-		mass.reset();
-		mass_ridge1.reset();
-		mass_ridge2.reset();
+		InitializeHash();
 	}
 
-	void Reset()
+	void StartHashTable(vector<float> _weight)
 	{
-		mass.reset();
-		mass_ridge1.reset();
-		mass_ridge2.reset();
+		this->weight = _weight;
+
+		int staircount = 1;
+		wstairs[0] = staircount;
+		for(int i = 1; i < this->expbase; i++)
+		{
+			if(weight[i] > weight[i-1]) staircount++;
+			wstairs[i] = staircount;
+		}
 	}
 
 	void Mark(Facet _new_fac)
@@ -1272,10 +1371,11 @@ public:
 		return this->mass[HashCode_full(_currfacet)];
 	}
 
-	void MarkRidge(Facet _ridge, int _unique)
+	void MarkRidge(kFace _ridge/*, int _unique*/)
 	{
-		unsigned int hscode = HashCode_ridge(_ridge, _unique);
-
+		//unsigned int hscode = HashCode_ridge(_ridge, _unique);
+		unsigned int hscode = HashCode_ridgeCombin(_ridge);
+		
 		if(this->mass_ridge1[hscode])
 			this->mass_ridge2[hscode] = 1;
 		else
@@ -1283,9 +1383,10 @@ public:
 
 	}
 
-	bool CheckRidge(Facet _ridge, int _unique)
+	bool CheckRidge(kFace _ridge/*, int _unique*/)
 	{
-		return this->mass_ridge2[HashCode_ridge(_ridge, _unique)];
+		//return this->mass_ridge2[HashCode_ridge(_ridge, _unique)]; 
+		return this->mass_ridge2[HashCode_ridgeCombin(_ridge)]; 
 	}
 };
 

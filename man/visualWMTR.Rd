@@ -1,23 +1,17 @@
 \name{visualWMTR}
 \alias{visualWMTR}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-3d-visualization of the calculated weighted-mean trimmed region
+Visualizing the Calculated WMT Region for the Data in 3D
 }
 \description{
-The function uses OpenGL to visualize a WMTR for the data of dimension 3. 
-}
+This function realizes the \eqn{3d}-visualization of the data and computational results of applying \code{\link{WMTR}} function. The parameter \code{fdir} is to be similar to that was used in \code{\link{WMTR}}.}
 \usage{
 visualWMTR(fdir = getwd())
 }
 \arguments{
   \item{fdir}{
-String argument describing a name of a directory where the computing results are located. If empty, the working directory is considered.
+A path to the directory where the output files of \code{\link{WMTR}} are located.
 }
-}
-\details{
-}
-\value{
 }
 \author{
 Pavel Bazovkin and Karl Mosler

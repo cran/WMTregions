@@ -1,51 +1,38 @@
 \name{generTRsample}
 \alias{generTRsample}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Generating a sample data file for calculating WMTR
+Generating Sample Data Cloud File For Applying \code{\link{WMTR}}
 }
 \description{
-This function creates a uniformly distributed pseudorandom data cloud according to the given parameters.
-}
+This function is an auxiliary one. It generates a random uniformly distributed data cloud of any size \code{num} and any dimension \code{dim} with the format appropriate for applying \code{\link{WMTR}}. }
 \usage{
-generTRsample(fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 10, alpha = 0.221, trtype = "zonoid")
+generTRsample(fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 20, alpha = 0.05, trtype = "zonoid")
 }
 \arguments{
   \item{fname}{
-A name of a target file
+A name of the target file.
 }
   \item{fdir}{
-A directory of a target file (by default, the working directory)
+A directory of a target file (by default, the working directory).
 }
   \item{dim}{
-Dimension of the data cloud
+Dimension of the data cloud.
 }
   \item{num}{
-Number of data points in the data cloud
+Number of data points in the data cloud.
 }
   \item{alpha}{
-Depth parameter \code{alpha} - floating point number in [0,1[, e.g. 0.221  
+Depth parameter \code{alpha} - floating point number in \eqn{(0,\dots,1)}, e.g. \kbd{0.117}.  
 }
   \item{trtype}{
-WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{geometrical})
+The notion of the WMT region to be calculated.
 }
-}
-\details{
 }
 \value{
-The format of a data file:
-
-1. WMTR type - string value (choose from \var{zonoid}, \var{ECH}, \var{ECH*}, \var{geometrical})
-
-2. Depth parameter \var{alpha} - floating point number in [0,1[, e.g. 0.221
-
-3. Dimension \var{dim} - integer number > 2
-
-4. Number of data points \var{num} - integer number > \var{dim}
-
-5. Serially written coordinates of the data points - \var{dim * var} floating point numbers
-
+\item{A file \code{fname}}{An input file for \code{\link{WMTR}}. See \code{\link{WMTR}} for the format details.}
 }
+
+
 \author{
 Pavel Bazovkin and Karl Mosler
 }
@@ -55,7 +42,7 @@ Pavel Bazovkin and Karl Mosler
 }
 
 \examples{
-\dontrun{generTRsample("Cloud.dat", dim = 3, num = 10, alpha = 0.221, trtype = "zonoid")}
+\dontrun{generTRsample("Cloud.dat", dim = 3, num = 20, alpha = 0.221, trtype = "zonoid")}
 \dontrun{WMTR("Cloud.dat")}
 }
 

@@ -1,24 +1,22 @@
 \name{showWMTR}
 \alias{showWMTR}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Visualizing a calculated weighted-mean trimmed region
+Demonstrating the Calculated WMT Region of Any Dimension
 }
 \description{
-Visualizes a calculated WMTR as convex polytope by representing its vertices in the \pkg{rggobi} interactive graphics framework. The WMTR should be firstly calculated. 
+Demonstrates the calculated WMT region of any dimension by making multiple projections of its vertices into 3D. 
 }
 \usage{
 showWMTR(fdir = getwd())
 }
 \arguments{
   \item{fdir}{
-String argument describing a name of a directory where the computing results are located. If empty, the working directory is considered.
+A path to the directory where the output files of \code{\link{WMTR}} are located. Must be similar to \code{fdir} that was used in \code{\link{WMTR}}.
 }
 }
 
 \details{
-}
-\value{
+The function visualizes a calculated WMT region as a convex polytope by representing its vertices in \pkg{rggobi}. The visualization is a series of projections into the space of dimension 3. In comparison with \code{\link{visualWMTR}}, \code{\link{showWMTR}} visualizes only vertices but, however, does it for the data of any dimension.
 }
 \author{
 Pavel Bazovkin and Karl Mosler
@@ -26,6 +24,7 @@ Pavel Bazovkin and Karl Mosler
 
 \seealso{
 \code{\link{WMTR}}
+\code{\link{visualWMTR}}
 }
 
 

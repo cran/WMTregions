@@ -1,34 +1,32 @@
 \name{loadWMTR}
 \alias{loadWMTR}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Loading a calculated weighted-mean trimmed region from a text file to an R object
+Loading a Calculated WMT Region From a File to a Matrix Object
 }
 \description{
-Having calculated a WMT region you can load it into a matrix for working with it. 
-}
+This function loads the calculated WMT region into a matrix object in order to work with it as with a variable in \R. For example, for applying the function \code{\link{pointinTR}}.}
 \usage{
-loadWMTR(fdir = getwd())
+loadWMTR(fname = "TRegion.dat", fdir = getwd())
 }
 \arguments{
+  \item{fname}{
+The name of the file with the calculated WMT region (the normal-intercept representation output file of \code{\link{WMTR}}) in the directory \code{fdir}.
+}
   \item{fdir}{
-String argument describing a name of a directory where the computing results are located. If empty, the working directory is considered.
+A path to the directory where the output files of \code{\link{WMTR}} are located. If empty, the working directory is considered.
 }
-
-}
-\details{
 
 }
 
 \value{
-Matrix with each row representing a facet of the trimmed region
-}
+\item{\code{tregion}}{A matrix object containing the normal-intercept coordinates of the WMT region facets as its rows.}}
 \author{
 Pavel Bazovkin and Karl Mosler
 }
 
 \seealso{
 \code{\link{WMTR}}
+\code{\link{pointinTR}}
 }
 
 
