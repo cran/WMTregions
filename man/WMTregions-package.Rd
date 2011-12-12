@@ -36,7 +36,7 @@ Maintainer: Pavel Bazovkin \email{econometrics@russia.ru}
 
 
 \references{
-Bazovkin, P. and Mosler, K. (201x). An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension. Submitted to JSS.
+Bazovkin, P. and Mosler, K. (2012). An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension. Journal of Statistical Software, \bold{47(13)}, pp. 1--29. URL \url{http://www.jstatsoft.org/v47/i13/}.
 
 Dyckerhoff, R. and Mosler, K. (2011). Weighted-mean trimming of multivariate data. Journal of Multivariate analysis, \bold{102}, pp. 405--421.
 

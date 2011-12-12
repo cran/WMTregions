@@ -1,0 +1,20 @@
+citHeader("To cite WMTregions in publications use:")
+
+citEntry(entry = "Article",
+  title        = "An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension",
+  author       = personList(as.person("Pavel Bazovkin"),
+                   as.person("Karl Mosler")),
+  journal      = "Journal of Statistical Software",
+  year         = "2012",
+  volume       = "47",
+  number       = "13",
+  pages        = "1--29",
+  url          = "http://www.jstatsoft.org/v47/i13/",
+
+  textVersion  =
+  paste("Pavel Bazovkin, Karl Mosler (2012).",
+        "An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension.",
+        "Journal of Statistical Software, 47(13), 1-29.",
+        "URL http://www.jstatsoft.org/v47/i13/.")
+)
+

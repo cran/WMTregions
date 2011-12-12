@@ -58,7 +58,8 @@ The points must be in the general position.
 
 }
 \references{
-Bazovkin, P. and Mosler, K. An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension. 201x. Submitted to JSS.
+Bazovkin, P. and Mosler, K. (2012). An Exact Algorithm for Weighted-Mean Trimmed Regions in Any Dimension. Journal of Statistical Software, \bold{47(13)}, pp. 1--29. URL \url{http://www.jstatsoft.org/v47/i13/}.
+
 }
 \author{
 Pavel Bazovkin and Karl Mosler
