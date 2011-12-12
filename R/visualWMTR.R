@@ -49,7 +49,7 @@ ayname = c(0,10,0)
 azname = c(0,0,10)
    
 axesnames =  c("x","y","z")
- text3d(axname, ayname, azname, text=axesnames ,adj = 0, color="ghostwhite", family=1, font=1, cex=1)
+ text3d(axname, ayname, azname, texts=axesnames ,adj = 0, color="ghostwhite", family=1, font=1, cex=1)
 
     
 }

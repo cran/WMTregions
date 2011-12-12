@@ -1,0 +1,2 @@
+export(WMTR, generTRsample, visualWMTR, showWMTR, loadWMTR, pointinTR)
+useDynLib(WMTregions, ComputeWMTR)

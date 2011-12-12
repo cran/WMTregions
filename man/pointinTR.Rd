@@ -36,10 +36,10 @@ Pavel Bazovkin and Karl Mosler
 
 
 \examples{
-\dontrun{generTRsample("Cloud.dat")}
-\dontrun{WMTR("Cloud.dat")}
-\dontrun{tregion <- loadWMTR( )}
-\dontrun{if(pointinTR( c(1,-2,3), tregion)) "In!" else "Out!"}
+generTRsample("Cloud.dat")
+WMTR("Cloud.dat")
+tregion <- loadWMTR( )
+if(pointinTR( c(1,-2,3), tregion)) "In!" else "Out!"
 
 }
 

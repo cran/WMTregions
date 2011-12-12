@@ -12,8 +12,8 @@ This package realizes an exact algorithm (Bazovkin and Mosler, 201x) to compute 
 \tabular{ll}{
 Package: \tab WMTregions\cr
 Type: \tab Package\cr
-Version: \tab 3.1.0\cr
-Date: \tab 2011-07-08\cr
+Version: \tab 3.2\cr
+Date: \tab 2011-12-12\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
@@ -55,8 +55,8 @@ Mosler, K. (2002). \emph{Multivariate Dispersion, Central Regions and Depth: The
 
 \examples{
 
-\dontrun{generTRsample("Cloud.dat")}
-\dontrun{WMTR("Cloud.dat")}
-\dontrun{visualWMTR()}
+generTRsample("Cloud.dat")
+WMTR("Cloud.dat")
+visualWMTR()
 
 }

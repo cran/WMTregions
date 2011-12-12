@@ -17,9 +17,9 @@ A path to the directory where the output files of \code{\link{WMTR}} are located
 Pavel Bazovkin and Karl Mosler
 }
 \examples{
-\dontrun{generTRsample("Cloud.dat")}     # Generate a sample data file in the working directory
-\dontrun{WMTR("Cloud.dat")}              # Processing the file from the working directory
-\dontrun{visualWMTR()}
+generTRsample("Cloud.dat")     # Generate a sample data file in the working directory
+WMTR("Cloud.dat")              # Processing the file from the working directory
+visualWMTR()
 }
 
 \keyword{ iplot }

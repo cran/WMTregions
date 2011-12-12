@@ -376,7 +376,7 @@ public:
 
 	vector<int> index_perm;                        // Index permutation
 
-	boost::dynamic_bitset<> neighs;                // Neighbours of the current extreme point (basing on the index_perm)
+	boost::dynamic_bitset<unsigned int> neighs;                // Neighbours of the current extreme point (basing on the index_perm)
 
 	int _border;                                   // Index of a border element
 
@@ -424,11 +424,11 @@ public:
 	}
 
 	// Method to return ordered map of n points (basing of index_perm), where their position is displayed (1 in array - before border point; 0 - after)
-	boost::dynamic_bitset<> GetSmallPartialMap()
+	boost::dynamic_bitset<unsigned int> GetSmallPartialMap()
 	{
 		int amount = this->index_perm.size();
 
-		boost::dynamic_bitset<> elem_map(amount/* + 32*/);
+		boost::dynamic_bitset<unsigned int> elem_map(amount/* + 32*/);
 
 		for(int i = 0; i < amount; i++)
 		{
@@ -651,16 +651,16 @@ public:
 
 	// Gives the hash code for the facet IF nodes are ordered (!!!Warning!!!)
 	// Returns (n + d * 32)-bit hash (n for the basic map and 32 for each epoint) 
-	boost::dynamic_bitset<> GetHashMap()
+	boost::dynamic_bitset<unsigned int> GetHashMap()
 	{
 		int amount = nodes.begin()->index_perm.size();
 
 		int volume = amount + dim * 32;
 		
-		boost::dynamic_bitset<> hash(volume);
+		boost::dynamic_bitset<unsigned int> hash(volume);
 
 		// Implementing basic map into the hash
-		boost::dynamic_bitset<> basic_map = nodes.begin()->GetSmallPartialMap();
+		boost::dynamic_bitset<unsigned int> basic_map = nodes.begin()->GetSmallPartialMap();
 		for(int j = 0; j < amount; j++)
 		{
 			hash[j] = basic_map[j];
@@ -769,7 +769,7 @@ public:
 
 	// *** To hyperplane approach ***
 
-	boost::dynamic_bitset<> basic_scheme;  // The basic map for this facet (except d points with variable positions defining the facet) 
+	boost::dynamic_bitset<unsigned int> basic_scheme;  // The basic map for this facet (except d points with variable positions defining the facet) 
 	
 	list<int>     def_set;       // A set of $d$ points from the data cloud defining a position of the facet (without the absolute member)
 
@@ -916,10 +916,10 @@ public:
 
 	}
 
-	boost::dynamic_bitset<> GetHashMapH(int _num)
+	boost::dynamic_bitset<unsigned int> GetHashMapH(int _num)
 	{
 
-		boost::dynamic_bitset<> hmap(_num);
+		boost::dynamic_bitset<unsigned int> hmap(_num);
 		hmap.reset();
 
 		list<int>::iterator wit;
@@ -939,7 +939,7 @@ public:
 		int num = _num;
 		vector<int> arbind(num);
 
-		boost::dynamic_bitset<> hmap = GetHashMapH(num);
+		boost::dynamic_bitset<unsigned int> hmap = GetHashMapH(num);
 
 		int li = 0;
 		int bi = this->anchor;
@@ -1000,13 +1000,13 @@ protected:
 
 	unsigned int ceiling;
 
-	boost::dynamic_bitset<> mass;
+	boost::dynamic_bitset<unsigned int> mass;
 
 	// According to the indentification theorem, it should uniquely represent ${\cal X}_F$
 	unsigned int HashCode(Facet _currfacet)
 	{
 		// Coding each ${\cal A}_l$ by the product and the sum of its points indices requires 2 int32 blocks
-		boost::dynamic_bitset<> hmap(_currfacet.anchors.size() * 32 * 3 + 32);
+		boost::dynamic_bitset<unsigned int> hmap(_currfacet.anchors.size() * 32 * 3 + 32);
 		hmap.reset();
 
 		// Mapping info about all ${\cal A}_l$ sequentially
@@ -1065,7 +1065,7 @@ protected:
 	// The same as HashCode(), just with a different mapping method (the 1st part)
 	unsigned int HashCode_full(Facet _currfacet)
 	{
-		boost::dynamic_bitset<> hmap(expbase * _currfacet.anchors.size() + 1);
+		boost::dynamic_bitset<unsigned int> hmap(expbase * _currfacet.anchors.size() + 1);
 		hmap.reset();
 
 		// Mapping info about all ${\cal A}_l$ sequentially
@@ -1128,8 +1128,8 @@ protected:
 
 		// Define how many indices are packed into one integer
 		int pack = 2; int indspace = 32 / pack;
-		boost::dynamic_bitset<> hmap((expbase+pack-(expbase%pack)) * indspace);
-		//boost::dynamic_bitset<> hmap(expbase * _ridge.anchors.size() + (expbase - _ridge.Dim())*32);
+		boost::dynamic_bitset<unsigned int> hmap((expbase+pack-(expbase%pack)) * indspace);
+		//boost::dynamic_bitset<unsigned int> hmap(expbase * _ridge.anchors.size() + (expbase - _ridge.Dim())*32);
 		hmap.reset();
 
 		// General positioning info
@@ -1182,8 +1182,8 @@ protected:
 	unsigned int HashCode_ridge(kFace _ridge, int _unique)
 	{
 		//::ResumeCumulTime();
-		boost::dynamic_bitset<> hmap(expbase * _ridge.anchors.size() + 32);
-		//boost::dynamic_bitset<> hmap(expbase * _ridge.anchors.size() + (expbase - _ridge.Dim())*32);
+		boost::dynamic_bitset<unsigned int> hmap(expbase * _ridge.anchors.size() + 32);
+		//boost::dynamic_bitset<unsigned int> hmap(expbase * _ridge.anchors.size() + (expbase - _ridge.Dim())*32);
 		hmap.reset();
 
 		// Mapping info about all ${\cal A}_l$ sequentially
@@ -1288,7 +1288,7 @@ protected:
 
 	unsigned int HashCode2(Facet _currfacet)
 	{
-		boost::dynamic_bitset<> hmap(expbase);
+		boost::dynamic_bitset<unsigned int> hmap(expbase);
 		hmap.reset();
 		list<int>::iterator wit;
 
@@ -1308,8 +1308,8 @@ protected:
 		return hcode % this->ceiling;
 	}
 
-	boost::dynamic_bitset<> mass_ridge1;
-	boost::dynamic_bitset<> mass_ridge2;
+	boost::dynamic_bitset<unsigned int> mass_ridge1;
+	boost::dynamic_bitset<unsigned int> mass_ridge2;
 
 public:
 

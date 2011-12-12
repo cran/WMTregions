@@ -36,13 +36,16 @@ public:
 
 	Point coord_center;         // Coordinates of the centroid
 
-	void PrintResults(int _bound)
+	void PrintResults(const char* _dir, const int _bound)
 	{
 		//ofstream os("TRegion.dat");
 		
+		char pathtofile[100]; 
 		FILE *stream, *stream_ub;
-		stream    = fopen( "TRegion_vertices.dat", "w" );
-		stream_ub = fopen( "TRegion_vertices_bound.dat", "w" );
+		strcpy(pathtofile, _dir);
+		stream    = fopen( strcat(pathtofile, "TRegion_vertices.dat"), "w" );
+		strcpy(pathtofile, _dir);
+		stream_ub = fopen( strcat(pathtofile, "TRegion_vertices_bound.dat"), "w" );
 		
 		//os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
 		//fprintf( stream, "The calculated trimmed region: (%d facets) \n", this->trimmed_region.size() );
@@ -186,13 +189,16 @@ public:
 		fclose(tos);
 	}
 
-	void PrintResultsHyperplanes(char* _dir, int _bound)
+	void PrintResultsHyperplanes(const char* _dir, const int _bound)
 	{
 
-            //ofstream os(strcat(_dir, "trimmed_region_vertices2.dat"));
-		ofstream osv( "tmp_vrtheap.dat");
-		ofstream ostr( "TRegion.dat");
-		ofstream ostrbnd( "TRegion_bound.dat");
+		char pathtofile[100]; 
+		strcpy(pathtofile, _dir);
+		ofstream osv    ( strcat(pathtofile,"tmp_vrtheap.dat") );
+		strcpy(pathtofile, _dir);
+		ofstream ostr   ( strcat(pathtofile,"TRegion.dat") );
+		strcpy(pathtofile, _dir);
+		ofstream ostrbnd( strcat(pathtofile,"TRegion_bound.dat") );
 		//ofstream os("Trimmed_region.dat");
 		
 		//os << "The calculated trimmed region: (" << this->trimmed_region.size() << " facets) \n";
@@ -388,7 +394,7 @@ private:
 public:
 
 
-	void GLSceneToExport(int _bound)									// Here's Where We Do All The Drawing
+	void GLSceneToExport(const char* _dir, const int _bound)									// Here's Where We Do All The Drawing
 	{
 		// Only for d=3
 		if(this->coord_center.coord.size() != 3) return;
@@ -398,7 +404,9 @@ public:
 		//// ********************* Display points from the data cloud **************************
 
 		
-		ofstream osvisd( "tmp_vis_dt.dat");
+		char pathtofile[100]; 
+		strcpy(pathtofile, _dir);
+		ofstream osvisd( strcat(pathtofile, "tmp_vis_dt.dat"));
 
 		currcol[0] = 255;
 		currcol[1] = 0;
@@ -443,7 +451,8 @@ public:
 
 		// ********************* Display the trimmed region **********************************
 
-		ofstream osvisf("tmp_vis_fc.dat");
+		strcpy(pathtofile, _dir);
+		ofstream osvisf( strcat(pathtofile, "tmp_vis_fc.dat"));
 
 		list<Facet>::iterator facetit;
 
@@ -557,7 +566,8 @@ public:
 		
 		// ********************* Display edges of the trimmed region *************************
 
-		ofstream osvisr("tmp_vis_rg.dat");
+		strcpy(pathtofile, _dir);
+		ofstream osvisr( strcat(pathtofile, "tmp_vis_rg.dat") );
 		
 		//glColor3f(0.4f,0.4f,0.4f);						
 		for(facetit = this->trimmed_region.begin(); facetit != this->trimmed_region.end(); facetit++)
@@ -809,9 +819,9 @@ protected:
 
 	// Working with the hash-table
 	
-	list<boost::dynamic_bitset<> > hash_table;
+	list<boost::dynamic_bitset<unsigned int> > hash_table;
 	
-	static bool HashOrder(boost::dynamic_bitset<> bs1, boost::dynamic_bitset<> bs2)
+	static bool HashOrder(boost::dynamic_bitset<unsigned int> bs1, boost::dynamic_bitset<unsigned int> bs2)
 	{
 		//::ResumeCumulTime();
 		// Warning: not optimal procedure
@@ -843,7 +853,7 @@ protected:
 		return true;*/
 	}
 	
-	static bool ReversedHashOrder(boost::dynamic_bitset<> bs1, boost::dynamic_bitset<> bs2)
+	static bool ReversedHashOrder(boost::dynamic_bitset<unsigned int> bs1, boost::dynamic_bitset<unsigned int> bs2)
 	{
 		return !HashOrder(bs1, bs2);
 	}
@@ -851,11 +861,11 @@ protected:
 	void MarkByHash(Facet _new_fac)
 	{
 		// Warning: not optimal insertion algorithm!
-		list<boost::dynamic_bitset<> >::iterator hashit;
+		list<boost::dynamic_bitset<unsigned int> >::iterator hashit;
 
 		bool inserted = false;
 		
-		boost::dynamic_bitset<> curr_hash = _new_fac.GetHashMap();
+		boost::dynamic_bitset<unsigned int> curr_hash = _new_fac.GetHashMap();
 
 		if(this->hash_table.size() == 0)
 		{
@@ -948,10 +958,10 @@ protected:
 	}
 
 	// Neighbouring vertices
-	boost::dynamic_bitset<> FindNeighbours(ExtremePoint _epoint)
+	boost::dynamic_bitset<unsigned int> FindNeighbours(ExtremePoint _epoint)
 	{
 		// The resulting array - corresponding to index permutation of the extr point
-		boost::dynamic_bitset<> res(this->num);
+		boost::dynamic_bitset<unsigned int> res(this->num);
 
 		// Creating the bundle of vectors to each point in the data cloud from the boundary point
 		vector<Vector> bundle(this->num - 1);
@@ -1249,7 +1259,7 @@ protected:
 		_start_node.neighs = FindNeighbours(_start_node);
 		ffacet.nodes.push_back(_start_node);
 
-		boost::dynamic_bitset<> fneigh = _start_node.neighs;
+		boost::dynamic_bitset<unsigned int> fneigh = _start_node.neighs;
 
 		int search_start;
 		int search_stop;
@@ -1423,7 +1433,7 @@ public:
 					// !!!Warning!!! for the first facet this condition is ever met (all is OK) but inexplicitly - error possible 
 					if( nodeit->index_perm != currfacet.basic_perm )
 					{
-						boost::dynamic_bitset<> common_neigh(num);
+						boost::dynamic_bitset<unsigned int> common_neigh(num);
 
 						// We create a mask for conjunction of neigh sets 
 						//(1 - for all points in the zone (except main point of nodeit -> hence we need to find only the single 1) and 0 - for others)
@@ -1483,7 +1493,7 @@ public:
 								trunc_stop  = this->num-1;
 							}
 
-							boost::dynamic_bitset<> trunc_neigh(num);
+							boost::dynamic_bitset<unsigned int> trunc_neigh(num);
 
 							// We create a mask for conjunction of neigh sets 
 							trunc_neigh.reset();
@@ -1571,7 +1581,7 @@ public:
 								vector<int> circleperm(this->dim);
 								ExtremePoint protonode = neighbour;
 
-								boost::dynamic_bitset<> ggmap = neighbour.GetSmallPartialMap();
+								boost::dynamic_bitset<unsigned int> ggmap = neighbour.GetSmallPartialMap();
 
 								int suchecircle = 0;
 								int suchel = 0;
@@ -1912,11 +1922,11 @@ protected:
 	void MarkByHashH(Facet _new_fac)
 	{
 		// Warning: not optimal insertion algorithm!
-		list<boost::dynamic_bitset<> >::iterator hashit;
+		list<boost::dynamic_bitset<unsigned int> >::iterator hashit;
 
 		bool inserted = false;
 		
-		boost::dynamic_bitset<> curr_hash = _new_fac.GetHashMapH(this->num);
+		boost::dynamic_bitset<unsigned int> curr_hash = _new_fac.GetHashMapH(this->num);
 
 		if(this->hash_table.size() == 0)
 		{
@@ -2579,18 +2589,18 @@ public:
 			{
 				// "Cracking" each ${\cal{A}}_l$ into 2 sets. There are $2^{\|{\cal{A}}\|}-2$
 
-				list<boost::dynamic_bitset<> > crackmasks;
+				list<boost::dynamic_bitset<unsigned int> > crackmasks;
 
 				for(int ccc = 1; ccc < pow(2.0, *itercard) - 1.5; ccc++ )
 				{
-					boost::dynamic_bitset<> crackmask(*itercard, ccc);
+					boost::dynamic_bitset<unsigned int> crackmask(*itercard, ccc);
 
 					crackmasks.push_back(crackmask);
 				}
 
 				// Filtering crackmaps according to the condition (3)
 
-				list<boost::dynamic_bitset<> >::iterator itcrack;
+				list<boost::dynamic_bitset<unsigned int> >::iterator itcrack;
 
 				//for(int k = *iterset; k < *iterset+*itercard; k++)
 				for(itcrack = crackmasks.begin(); itcrack != crackmasks.end(); itcrack++)
@@ -3093,11 +3103,12 @@ public:
 	}
 
 	// Receive cloud of points from the specified text file
-	int Receive(char* _source, char* _dir)
+	int Receive(const char* _source,const char* _dir)
 	{
 		try
 		{
-			ifstream is(strcat(_dir,_source));     // Open file with data
+			char pathtofile[100]; strcpy(pathtofile, _dir);
+			ifstream is(strcat(pathtofile,_source));     // Open file with data
 
 			is >> WMTD_type;
 
@@ -3246,8 +3257,8 @@ int  ComputeWMTR(char** nameofsource, char** _wdir, int* _bound)			// Window Sho
 		result_agent->coord_center   = input_agent->centroid;
 
 		result_agent->PrintResultsHyperplanes(*_wdir, *_bound);
-		result_agent->PrintResults(*_bound);
-		result_agent->GLSceneToExport(*_bound);
+		result_agent->PrintResults(*_wdir, *_bound);
+		result_agent->GLSceneToExport(*_wdir, *_bound);
 	}
 	else
 	// Group mode

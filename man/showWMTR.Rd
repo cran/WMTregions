@@ -29,8 +29,8 @@ Pavel Bazovkin and Karl Mosler
 
 
 \examples{
-\dontrun{generTRsample("Cloud.dat")}
-\dontrun{WMTR("Cloud.dat")}
+generTRsample("Cloud.dat")
+WMTR("Cloud.dat")
 \dontrun{showWMTR()}
 }
 

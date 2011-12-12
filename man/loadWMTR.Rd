@@ -31,11 +31,10 @@ Pavel Bazovkin and Karl Mosler
 
 
 \examples{
-\dontrun{generTRsample("Cloud.dat")}
-\dontrun{WMTR("Cloud.dat")}
-\dontrun{showWMTR()}
-\dontrun{tregion <- loadWMTR( )}
-\dontrun{tregion}
+generTRsample("Cloud.dat")
+WMTR("Cloud.dat")
+tregion <- loadWMTR( )
+tregion
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the

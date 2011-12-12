@@ -42,8 +42,8 @@ Pavel Bazovkin and Karl Mosler
 }
 
 \examples{
-\dontrun{generTRsample("Cloud.dat", dim = 3, num = 20, alpha = 0.221, trtype = "zonoid")}
-\dontrun{WMTR("Cloud.dat")}
+generTRsample("Cloud.dat", dim = 3, num = 20, alpha = 0.221, trtype = "zonoid")
+WMTR("Cloud.dat")
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
