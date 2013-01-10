@@ -7,7 +7,7 @@ function (fdir = getwd())
     rgl.open()
 	#bg3d('white')
 	
- 	centroid = as.real(datacloudvis[1,])
+ 	centroid = as.double(datacloudvis[1,])
 	datacloudvis = datacloudvis[2:nrow(datacloudvis),]
 	
 	maxscale = max(abs(datacloudvis+centroid))

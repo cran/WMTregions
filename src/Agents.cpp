@@ -2119,39 +2119,6 @@ protected:
 	}
 
 
-	list<Vector> GetCriticalVectors2(Facet _currfac)
-	{
-		list<Vector> crit_set;
-		//
-		//// Defining critical vectors connected with defining sets
-		//for(int i = 0; i < _currfac.anchors.size(); i++)
-		//{
-		//	Vector cv(this->dim);
-		//	// To the left
-		//	if( _currfac.anchors[i]==1 || this->weight[_currfac.anchors[i]-1] > this->weight[_currfac.anchors[i]-2] )
-		//	{
-		//		cv.comb[0] = anchors[i]-1;
-		//		cv.comb[1] = anchors[i];
-
-		//		cv.FromPointToPoint(this->perm[indexperm[_currfac.anchors[i]]], this->perm[indexperm[_currfac.anchors[i]-1]]);
-
-		//		crit_set.push_back(cv);
-		//	}
-		//	else
-		//	{
-		//		// Create vector for each point from the homogenous set to the left of curr_def_set
-
-		//	}
-
-		//	// To the right - the same
-		//}
-		//
-		//// Defining critical vectors connected with emerging of new defining sets
-		//// 1) Vectors between neighbors
-		//// 2) Combintations from two neighboring "homogenous" sets (# = card(set_1) * card(set_2))
-
-
-	}
 
 public:
 
@@ -3240,7 +3207,7 @@ public:
 
 extern "C"{
 
-int  ComputeWMTR(char** nameofsource, char** _wdir, int* _bound)			// Window Show State
+void  ComputeWMTR(char** nameofsource, char** _wdir, int* _bound)			// Window Show State
 {
 	
 	bool single_mode = true;

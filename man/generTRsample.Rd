@@ -6,7 +6,8 @@ Generating Sample Data Cloud File For Applying \code{\link{WMTR}}
 \description{
 This function is an auxiliary one. It generates a random uniformly distributed data cloud of any size \code{num} and any dimension \code{dim} with the format appropriate for applying \code{\link{WMTR}}. }
 \usage{
-generTRsample(fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 20, alpha = 0.05, trtype = "zonoid")
+generTRsample(fname = "Cloud.dat", fdir = getwd(), dim = 3, num = 20,
+              alpha = 0.05, trtype = "zonoid")
 }
 \arguments{
   \item{fname}{
